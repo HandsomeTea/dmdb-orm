@@ -29,5 +29,8 @@
     "npm-check": "^5.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "dmdb": "^1.0.11090"
   }
 }

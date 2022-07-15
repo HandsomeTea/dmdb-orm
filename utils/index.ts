@@ -1,0 +1,1 @@
+export { typeIs } from './typeIs';

@@ -1,0 +1,33 @@
+{
+  "name": "dmdb-orm",
+  "version": "1.0.0",
+  "description": "dmdb orm",
+  "main": "index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/tsc",
+    "eslint": "./node_modules/.bin/eslint ./ --fix",
+    "upgrade": "./node_modules/.bin/npm-check -u",
+    "husky-hook": "./node_modules/.bin/husky add .husky/pro-commit \"npm run eslint\" && husky add .husky/pro-push \"npm run build\"",
+    "husky-init": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HandsomeTea/dmdb-orm.git"
+  },
+  "keywords": [
+    "dmdb"
+  ],
+  "author": "handsometea.coco@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HandsomeTea/dmdb-orm/issues"
+  },
+  "homepage": "https://github.com/HandsomeTea/dmdb-orm#readme",
+  "devDependencies": {
+    "eslint": "^8.19.0",
+    "husky": "^8.0.1",
+    "npm-check": "^5.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.7.4"
+  }
+}

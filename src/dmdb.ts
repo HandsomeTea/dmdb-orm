@@ -33,6 +33,8 @@ export class DMServer {
             ORM_DMDB_SETTING.timezone = timezone;
         }
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         delete option.modelName;
         delete option.createdAt;
         delete option.updatedAt;

@@ -24,6 +24,8 @@
   },
   "homepage": "https://github.com/HandsomeTea/dmdb-orm#readme",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
     "eslint": "^8.19.0",
     "husky": "^8.0.1",
     "npm-check": "^5.9.2",

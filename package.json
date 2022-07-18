@@ -4,7 +4,7 @@
   "description": "dmdb orm",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/tsc",
+    "build": "./node_modules/.bin/tsc -d",
     "eslint": "./node_modules/.bin/eslint ./ --fix",
     "upgrade": "./node_modules/.bin/npm-check -u",
     "husky-hook": "./node_modules/.bin/husky add .husky/pro-commit \"npm run eslint\" && husky add .husky/pro-push \"npm run build\"",

@@ -1,7 +1,16 @@
 import dmdb, { Connection, PoolAttributes } from 'dmdb';
-import { DmdbCustomSetting } from './types/type';
 
+export interface DmdbCustomSetting {
+    modelName: string
+    createdAt?: string
+    updatedAt?: string
+    /** default: iso */
+    timezone?: 'iso' | 'local'
+}
+
+// eslint-disable-next-line no-var
 export var ORM_DMDB_SERVER: Connection | null = null;
+// eslint-disable-next-line no-var
 export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '' };
 
 
@@ -23,7 +32,7 @@ export class DMServer {
         if (timezone) {
             ORM_DMDB_SETTING.timezone = timezone;
         }
-        // @ts-ignore
+
         delete option.modelName;
         delete option.createdAt;
         delete option.updatedAt;
@@ -32,15 +41,11 @@ export class DMServer {
     }
 
     private async init(option: PoolAttributes) {
-        try {
-            const pool = await dmdb.createPool(option);
+        const pool = await dmdb.createPool(option);
 
-            this.service = await pool.getConnection();
-            ORM_DMDB_SERVER = this.service;
-            this.isReady = true;
-        } catch (error) {
-            throw error;
-        }
+        this.service = await pool.getConnection();
+        ORM_DMDB_SERVER = this.service;
+        this.isReady = true;
     }
 
     public get server() {

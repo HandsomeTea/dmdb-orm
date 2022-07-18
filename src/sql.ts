@@ -2,11 +2,11 @@
 import { typeIs } from '../utils';
 import { ORM_DMDB_SETTING } from './dmdb';
 
-import { QueryOption, SQLOption, UpdateOption, WhereOption } from './types';
+import { QueryOption, SQLOption, UpdateOption, WhereOption } from './type';
 
 type Model = Record<string, any>;
 
-export default new class SQL {
+export default class SQL {
     /** 时区取值
      * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
      * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
@@ -259,4 +259,4 @@ export default new class SQL {
 
         return `select count(*) as count from ${tableName} ${this.getQueryOption(query)};`;
     }
-};
+}

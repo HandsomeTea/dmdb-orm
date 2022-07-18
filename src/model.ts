@@ -1,12 +1,13 @@
 import dmdb from 'dmdb';
 
-import SQL from './sql';
+import Sql from './sql';
 
-import { DmModel, QueryOption, UpdateOption } from './types';
+import { DmModel, QueryOption, UpdateOption } from './type';
 import { typeIs } from '../utils';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
-const ORM_DMDB_Model: Record<string, DmModel<Record<string, unknown>>> = {};
+const OrmDmdbModel: Record<string, DmModel<Record<string, unknown>>> = {};
+const SQL = new Sql();
 
 export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
     DATE: 'DATE',
@@ -56,7 +57,7 @@ export class Model<TB>{
         }
         this.tableName = this.tableName.split('.').map(a => `"${a}"`).join('.');
 
-        ORM_DMDB_Model[this.tableName] = {
+        OrmDmdbModel[this.tableName] = {
             ...struct,
             ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } :
                 ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: DmType.DATE } } : {},
@@ -69,12 +70,13 @@ export class Model<TB>{
         if (!ORM_DMDB_SERVER) {
             return;
         }
+        // eslint-disable-next-line no-console
         console.debug(`dmdb execute sql: ${sql}`);
         return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
     }
 
     private dataFormat(dbData: Record<string, unknown>): TB {
-        const struct = ORM_DMDB_Model[this.tableName] as DmModel<TB>;
+        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
         const data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in struct) {
@@ -98,7 +100,7 @@ export class Model<TB>{
     }
 
     private formatInsertData(data: TB): TB {
-        const struct = ORM_DMDB_Model[this.tableName] as DmModel<TB>;
+        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
         const _data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in struct) {
@@ -149,7 +151,7 @@ export class Model<TB>{
     }
 
     public async update(query: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>): Promise<void> {
-        const struct = ORM_DMDB_Model[this.tableName] as DmModel<TB>;
+        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
@@ -189,7 +191,7 @@ export class Model<TB>{
     }
 
     public async find(query?: QueryOption<TB>, projection?: Array<keyof TB>): Promise<Array<TB>> {
-        const sql = SQL.getSelectSql(query || {}, this.tableName, projection as Array<string> || Object.keys(ORM_DMDB_Model[this.tableName]));
+        const sql = SQL.getSelectSql(query || {}, this.tableName, projection as Array<string> || Object.keys(OrmDmdbModel[this.tableName]));
 
         return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>)) as Array<TB>;
     }
@@ -199,7 +201,7 @@ export class Model<TB>{
     }
 
     public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }, projection?: Array<keyof TB>): Promise<{ list: Array<TB>, total: number }> {
-        const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, projection as Array<string> || Object.keys(ORM_DMDB_Model[this.tableName]));
+        const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, projection as Array<string> || Object.keys(OrmDmdbModel[this.tableName]));
 
         return {
             list: (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>)) as Array<TB>,

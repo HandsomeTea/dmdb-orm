@@ -33,10 +33,11 @@ export type UpdateOption<M> = {
 //     type: 'DATE' | 'NUMBER' | 'STRING'
 // }
 
-export type DmModel<M extends {}> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DmModel<M extends Record<string, any>> = {
     [K in keyof M]: {
         type: 'DATE' | 'NUMBER' | 'STRING'
-        set?: (any) => M[K],
+        set?: (a: unknown) => M[K],
         defaultValue?: M[K] | (() => M[K])
     }
 }

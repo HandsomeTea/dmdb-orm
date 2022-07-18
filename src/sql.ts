@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { typeIs } from '../utils';
+import { typeIs } from './utils';
 import { ORM_DMDB_SETTING } from './dmdb';
 
 import { QueryOption, SQLOption, UpdateOption, WhereOption } from './type';

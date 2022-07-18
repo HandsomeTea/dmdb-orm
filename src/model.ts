@@ -1,9 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import dmdb from 'dmdb';
 
 import Sql from './sql';
 
 import { DmModel, QueryOption, UpdateOption } from './type';
-import { typeIs } from '../utils';
+import { typeIs } from './utils';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
 const OrmDmdbModel: Record<string, DmModel<Record<string, unknown>>> = {};
@@ -75,11 +77,11 @@ export class Model<TB>{
         return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
     }
 
-    private dataFormat(dbData: Record<string, unknown>): TB {
+    private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {
         const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
         const data: { [P in keyof TB]?: TB[P] } = {};
 
-        for (const key in struct) {
+        for (const key in projection) {
             if (typeof dbData[key] !== 'undefined') {
                 // const { type } = struct[key];
 
@@ -92,6 +94,8 @@ export class Model<TB>{
                     // @ts-ignore
                     data[key] = `${data[key]}`.trim();
                 }
+            } else {
+                data[key] = null;
             }
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -190,21 +194,35 @@ export class Model<TB>{
         }
     }
 
-    public async find(query?: QueryOption<TB>, projection?: Array<keyof TB>): Promise<Array<TB>> {
-        const sql = SQL.getSelectSql(query || {}, this.tableName, projection as Array<string> || Object.keys(OrmDmdbModel[this.tableName]));
+    public async find(): Promise<Array<TB>>
+    public async find(query: QueryOption<TB>): Promise<Array<TB>>
+    public async find<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<Array<{ [F in K]: TB[F] }>>
 
-        return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>)) as Array<TB>;
+    public async find(query?: QueryOption<TB>, projection?: Array<keyof TB>): Promise<Array<TB>> {
+        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<string>;
+        const sql = SQL.getSelectSql(query || {}, this.tableName, fields);
+
+        return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
     }
+
+    public async findOne(query: QueryOption<TB>): Promise<TB | null>
+    public async findOne<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<{ [F in K]: TB[F] } | null>
 
     public async findOne(query: QueryOption<TB>, projection?: Array<keyof TB>): Promise<TB | null> {
-        return (await this.find(query, projection))[0] || null;
+        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<keyof TB>;
+
+        return (await this.find({ ...query, offset: 0, limit: 1 }, fields))[0] || null;
     }
 
+    public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }): Promise<{ list: Array<TB>, total: number }>
+    public async paging<K extends keyof TB>(query: QueryOption<TB>, option: { skip: number, limit: number }, projection: Array<K>): Promise<{ list: Array<{ [F in K]: TB[F] }>, total: number }>
+
     public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }, projection?: Array<keyof TB>): Promise<{ list: Array<TB>, total: number }> {
-        const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, projection as Array<string> || Object.keys(OrmDmdbModel[this.tableName]));
+        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<string>;
+        const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, fields);
 
         return {
-            list: (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>)) as Array<TB>,
+            list: (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>,
             total: await this.count(query)
         };
     }

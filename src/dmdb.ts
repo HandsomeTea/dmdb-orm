@@ -6,7 +6,10 @@ export interface DmdbCustomSetting {
     modelName: string
     createdAt?: string
     updatedAt?: string
-    /** default: iso */
+    /** 时区取值，default: iso。
+     * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
+     * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
+     */
     timezone?: 'iso' | 'local'
 }
 

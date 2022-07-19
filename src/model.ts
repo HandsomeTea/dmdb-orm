@@ -107,14 +107,16 @@ export class Model<TB>{
             return;
         }
         if (ORM_DMDB_SETTING.logger) {
+            const str = Object.keys(bindParams).length > 0 ? JSON.stringify({ sql, bindParams }, null, '   ') : sql;
+
             if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
                 // eslint-disable-next-line no-console
-                console.debug(`dmdb execute sql: ${sql}`);
+                console.debug(`dmdb execute sql: ${str}`);
             } else {
-                ORM_DMDB_SETTING.logger(sql);
+                ORM_DMDB_SETTING.logger(str);
             }
         }
-        return await ORM_DMDB_SERVER?.execute(sql, bindParams, options);
+        return await ORM_DMDB_SERVER.execute(sql, bindParams, options);
     }
 
     private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {

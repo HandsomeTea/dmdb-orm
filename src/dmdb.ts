@@ -23,7 +23,7 @@ export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '
 export class DMServer {
     private service!: Connection;
     private isReady = false;
-    constructor(option: PoolAttributes & {
+    constructor(connect: PoolAttributes, option: {
         modelName: string,
         /** 时区取值，default: iso。
          * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
@@ -52,13 +52,7 @@ export class DMServer {
             ORM_DMDB_SETTING.logger = logger;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        delete option.modelName;
-        delete option.createdAt;
-        delete option.updatedAt;
-        delete option.timezone;
-        this.init(option);
+        this.init(connect);
     }
 
     private async init(option: PoolAttributes) {

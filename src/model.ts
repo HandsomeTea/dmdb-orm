@@ -98,7 +98,11 @@ export class Model<TB>{
         return this.tableName.replace(/"/g, '');
     }
 
-    private async execute(sql: string) {
+    private async exec(sql: string) {
+        return this.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
+    }
+
+    public async execute(sql: string, bindParams: dmdb.BindParameters, options: dmdb.ExecuteOptions) {
         if (!ORM_DMDB_SERVER) {
             return;
         }
@@ -110,11 +114,6 @@ export class Model<TB>{
                 ORM_DMDB_SETTING.logger(sql);
             }
         }
-
-        return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
-    }
-
-    public async dmExecute(sql: string, bindParams: dmdb.BindParameters, options: dmdb.ExecuteOptions) {
         return await ORM_DMDB_SERVER?.execute(sql, bindParams, options);
     }
 
@@ -177,7 +176,7 @@ export class Model<TB>{
     public async insert(data: TB): Promise<void> {
         const sql = SQL.getInsertSql(this.formatInsertData(data), { tableName: this.tableName, ...this.timestamp });
 
-        await this.execute(sql);
+        await this.exec(sql);
     }
 
     public async insertMany(data: Array<TB>): Promise<void> {
@@ -186,13 +185,13 @@ export class Model<TB>{
         for (let s = 0; s < data.length; s++) {
             sql += SQL.getInsertSql(this.formatInsertData(data[s]), { tableName: this.tableName, ...this.timestamp });
         }
-        await this.execute(sql);
+        await this.exec(sql);
     }
 
     public async delete(query: Pick<QueryOption<TB>, 'where'>): Promise<void> {
         const sql = SQL.getDeleteSql(query, this.tableName);
 
-        await this.execute(sql);
+        await this.exec(sql);
     }
 
     public async update(query: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>): Promise<void> {
@@ -222,7 +221,7 @@ export class Model<TB>{
         }
         const sql = SQL.getUpdateSql(query, _update, { tableName: this.tableName, ...this.timestamp });
 
-        await this.execute(sql);
+        await this.exec(sql);
     }
 
     public async upsert(uniqueQuery: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>, insert: TB): Promise<void> {
@@ -243,7 +242,7 @@ export class Model<TB>{
         const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
         const sql = SQL.getSelectSql(query || {}, this.tableName, fields);
 
-        return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
+        return (await this.exec(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
     }
 
     public async findOne(query: QueryOption<TB>): Promise<TB | null>
@@ -263,13 +262,13 @@ export class Model<TB>{
         const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, fields);
 
         return {
-            list: (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>,
+            list: (await this.exec(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>,
             total: await this.count(query)
         };
     }
 
     public async count(query: QueryOption<TB>): Promise<number> {
-        const data = (await this.execute(SQL.getCountSql(query, this.tableName)))?.rows as Array<Record<string, number>>;
+        const data = (await this.exec(SQL.getCountSql(query, this.tableName)))?.rows as Array<Record<string, number>>;
 
         return Number(Object.values(data[0])[0]);
     }

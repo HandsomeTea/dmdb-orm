@@ -8,7 +8,10 @@ import { DmModel, QueryOption, UpdateOption } from './type';
 import { typeIs } from './utils';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
-const OrmDmdbModel: Record<string, DmModel<Record<string, unknown>>> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TB = Record<string, any>;
+
+const OrmDmdbModel: Record<string, DmModel<TB>> = {};
 const SQL = new Sql();
 
 export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
@@ -18,7 +21,10 @@ export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
 };
 
 export class Model<TB>{
-    private tableName: string;
+    /**  */
+    private tName: string;
+    private modelName: string;
+    private tenantId: string | (() => string) | undefined;
     private timestamp: {
         createdAt?: string
         updatedAt?: string
@@ -29,25 +35,24 @@ export class Model<TB>{
         struct: DmModel<TB>,
         option?: {
             modelName?: string
-            tenantId?: string,
+            tenantId?: string | (() => string),
             createdAt?: string | boolean
             updatedAt?: string | boolean
         }
     ) {
-        this.tableName = tableName;
+        this.tName = tableName;
+        this.modelName = ORM_DMDB_SETTING.modelName;
         this.timestamp = {};
 
         if (option) {
             const { tenantId, modelName, createdAt, updatedAt } = option;
 
             if (tenantId) {
-                this.tableName = `${tenantId}_${this.tableName}`;
+                this.tenantId = tenantId;
             }
 
             if (modelName) {
-                this.tableName = `${modelName}.${this.tableName}`;
-            } else if (ORM_DMDB_SETTING.modelName) {
-                this.tableName = `${ORM_DMDB_SETTING.modelName}.${this.tableName}`;
+                this.modelName = modelName;
             }
 
             if (createdAt) {
@@ -57,7 +62,6 @@ export class Model<TB>{
                 this.timestamp.updatedAt = typeof updatedAt === 'string' ? updatedAt : 'updatedAt';
             }
         }
-        this.tableName = this.tableName.split('.').map(a => `"${a}"`).join('.');
 
         OrmDmdbModel[this.tableName] = {
             ...struct,
@@ -68,12 +72,46 @@ export class Model<TB>{
         };
     }
 
+    public get model() {
+        return OrmDmdbModel[this.tableName];
+    }
+
+    private get tableName() {
+        let tId: string | null = null;
+
+        if (this.tenantId) {
+            if (typeof this.tenantId === 'string') {
+                tId = this.tenantId;
+            } else {
+                tId = this.tenantId();
+            }
+        }
+        let name = this.tName;
+
+        if (tId) {
+            name = `${tId}_${name}`;
+        }
+
+        return `"${this.modelName}"."${name}"`;
+    }
+
+    public get table() {
+        return this.tableName.replace(/"/g, '');
+    }
+
     private async execute(sql: string) {
         if (!ORM_DMDB_SERVER) {
             return;
         }
-        // eslint-disable-next-line no-console
-        console.debug(`dmdb execute sql: ${sql}`);
+        if (ORM_DMDB_SETTING.logger) {
+            if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
+                // eslint-disable-next-line no-console
+                console.debug(`dmdb execute sql: ${sql}`);
+            } else {
+                ORM_DMDB_SETTING.logger(sql);
+            }
+        }
+
         return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
     }
 

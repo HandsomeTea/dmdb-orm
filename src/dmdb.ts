@@ -10,7 +10,8 @@ export interface DmdbCustomSetting {
      * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
      * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
      */
-    timezone?: 'iso' | 'local'
+    timezone?: 'iso' | 'local',
+    logger?: boolean | ((sql: string) => void)
 }
 
 // eslint-disable-next-line no-var
@@ -22,10 +23,20 @@ export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '
 export class DMServer {
     private service!: Connection;
     private isReady = false;
-    constructor(option: PoolAttributes & DmdbCustomSetting & { createdAt?: string | boolean, updatedAt?: string | boolean }) {
+    constructor(option: PoolAttributes & {
+        modelName: string,
+        /** 时区取值，default: iso。
+         * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
+         * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
+         */
+        timezone?: 'iso' | 'local',
+        createdAt?: string | boolean,
+        updatedAt?: string | boolean,
+        logger?: boolean | ((sql: string) => void)
+    }) {
         this.isReady = false;
 
-        const { modelName, createdAt, updatedAt, timezone } = option;
+        const { modelName, createdAt, updatedAt, timezone, logger } = option;
 
         ORM_DMDB_SETTING.modelName = modelName;
         if (createdAt) {
@@ -36,6 +47,9 @@ export class DMServer {
         }
         if (timezone) {
             ORM_DMDB_SETTING.timezone = timezone;
+        }
+        if (typeof logger !== 'undefined') {
+            ORM_DMDB_SETTING.logger = logger;
         }
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface SQLOption<M, P extends keyof M> {
     $ne?: M[P]
     $in?: Array<M[P]>
@@ -29,15 +31,12 @@ export type UpdateOption<M> = {
     [P in keyof M]?: M[P] extends string ? (string | { $pull: M[P], $split: ',' }) : M[P]
 }
 
-// export interface DmModelOption {
-//     type: 'DATE' | 'NUMBER' | 'STRING'
-// }
+export interface DmModelOption<M extends Record<string, any>, K extends keyof M> {
+    type: 'DATE' | 'NUMBER' | 'STRING'
+    set?: (a: unknown) => M[K],
+    defaultValue?: M[K] | (() => M[K])
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DmModel<M extends Record<string, any>> = {
-    [K in keyof M]: {
-        type: 'DATE' | 'NUMBER' | 'STRING'
-        set?: (a: unknown) => M[K],
-        defaultValue?: M[K] | (() => M[K])
-    }
+    [K in keyof M]: DmModelOption<M, K>
 }

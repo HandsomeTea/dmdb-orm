@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import dmdb, { Connection, PoolAttributes } from 'dmdb';
+import dmdb from 'dmdb';
 
 export interface DmdbCustomSetting {
     modelName: string
@@ -15,15 +15,15 @@ export interface DmdbCustomSetting {
 }
 
 // eslint-disable-next-line no-var
-export var ORM_DMDB_SERVER: Connection | null = null;
+export var ORM_DMDB_SERVER: dmdb.Connection | null = null;
 // eslint-disable-next-line no-var
 export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '' };
 
 
 export class DMServer {
-    private service!: Connection;
+    private service!: dmdb.Connection;
     private isReady = false;
-    constructor(connect: PoolAttributes, option: {
+    constructor(connect: dmdb.PoolAttributes, option: {
         modelName: string,
         /** 时区取值，default: iso。
          * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
@@ -55,7 +55,7 @@ export class DMServer {
         this.init(connect);
     }
 
-    private async init(option: PoolAttributes) {
+    private async init(option: dmdb.PoolAttributes) {
         const pool = await dmdb.createPool(option);
 
         this.service = await pool.getConnection();

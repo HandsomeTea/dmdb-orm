@@ -21,8 +21,9 @@ export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
 };
 
 export class Model<TB>{
-    /**  */
+    /** 初始化传入的表名 */
     private tName: string;
+    /** 在dmdb属于哪个模式 */
     private modelName: string;
     private tenantId: string | (() => string) | undefined;
     private timestamp: {
@@ -76,6 +77,7 @@ export class Model<TB>{
         return OrmDmdbModel[this.tableName];
     }
 
+    /** 最终所得的表名 */
     private get tableName() {
         let tId: string | null = null;
 
@@ -113,6 +115,10 @@ export class Model<TB>{
         }
 
         return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
+    }
+
+    public async dmExecute(sql: string, bindParams: dmdb.BindParameters, options: dmdb.ExecuteOptions) {
+        return await ORM_DMDB_SERVER.execute(sql, bindParams, options);
     }
 
     private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {

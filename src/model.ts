@@ -8,10 +8,6 @@ import { DmModel, QueryOption, UpdateOption } from './type';
 import { typeIs } from './utils';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TB = Record<string, any>;
-
-const OrmDmdbModel: Record<string, DmModel<TB>> = {};
 const SQL = new Sql();
 
 export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
@@ -30,6 +26,7 @@ export class Model<TB>{
         createdAt?: string
         updatedAt?: string
     };
+    private tableModel: DmModel<TB>;
 
     constructor(
         tableName: string,
@@ -64,7 +61,7 @@ export class Model<TB>{
             }
         }
 
-        OrmDmdbModel[this.tableName] = {
+        this.tableModel = {
             ...struct,
             ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } :
                 ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: DmType.DATE } } : {},
@@ -74,7 +71,7 @@ export class Model<TB>{
     }
 
     public get model() {
-        return OrmDmdbModel[this.tableName];
+        return this.tableModel;
     }
 
     /** 最终所得的表名 */
@@ -118,11 +115,11 @@ export class Model<TB>{
     }
 
     public async dmExecute(sql: string, bindParams: dmdb.BindParameters, options: dmdb.ExecuteOptions) {
-        return await ORM_DMDB_SERVER.execute(sql, bindParams, options);
+        return await ORM_DMDB_SERVER?.execute(sql, bindParams, options);
     }
 
     private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {
-        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
+        const struct = { ...this.tableModel };
         const data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in projection) {
@@ -148,7 +145,7 @@ export class Model<TB>{
     }
 
     private formatInsertData(data: TB): TB {
-        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
+        const struct = { ...this.tableModel };
         const _data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in struct) {
@@ -199,7 +196,7 @@ export class Model<TB>{
     }
 
     public async update(query: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>): Promise<void> {
-        const struct = OrmDmdbModel[this.tableName] as DmModel<TB>;
+        const struct = { ...this.tableModel };
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
@@ -243,7 +240,7 @@ export class Model<TB>{
     public async find<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<Array<{ [F in K]: TB[F] }>>
 
     public async find(query?: QueryOption<TB>, projection?: Array<keyof TB>): Promise<Array<TB>> {
-        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<string>;
+        const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
         const sql = SQL.getSelectSql(query || {}, this.tableName, fields);
 
         return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
@@ -253,7 +250,7 @@ export class Model<TB>{
     public async findOne<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<{ [F in K]: TB[F] } | null>
 
     public async findOne(query: QueryOption<TB>, projection?: Array<keyof TB>): Promise<TB | null> {
-        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<keyof TB>;
+        const fields = (projection || Object.keys(this.tableModel)) as Array<keyof TB>;
 
         return (await this.find({ ...query, offset: 0, limit: 1 }, fields))[0] || null;
     }
@@ -262,7 +259,7 @@ export class Model<TB>{
     public async paging<K extends keyof TB>(query: QueryOption<TB>, option: { skip: number, limit: number }, projection: Array<K>): Promise<{ list: Array<{ [F in K]: TB[F] }>, total: number }>
 
     public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }, projection?: Array<keyof TB>): Promise<{ list: Array<TB>, total: number }> {
-        const fields = (projection || Object.keys(OrmDmdbModel[this.tableName])) as Array<string>;
+        const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
         const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, fields);
 
         return {

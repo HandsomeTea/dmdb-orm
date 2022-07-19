@@ -22,7 +22,7 @@ export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '
 export class DMServer {
     private service!: Connection;
     private isReady = false;
-    constructor(option: PoolAttributes & DmdbCustomSetting) {
+    constructor(option: PoolAttributes & DmdbCustomSetting & { createdAt?: string | boolean, updatedAt?: string | boolean }) {
         this.isReady = false;
 
         const { modelName, createdAt, updatedAt, timezone } = option;

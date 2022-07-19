@@ -94,6 +94,7 @@ export class Model<TB>{
         return `"${this.modelName}"."${name}"`;
     }
 
+    /** table名称 */
     public get table() {
         return this.tableName.replace(/"/g, '');
     }

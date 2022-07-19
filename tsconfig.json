@@ -64,5 +64,6 @@
         "suppressImplicitAnyIndexErrors": true,
         "diagnostics": true,
         "extendedDiagnostics": true
-    }
+    },
+    "exclude": [ "./test" ]
 }

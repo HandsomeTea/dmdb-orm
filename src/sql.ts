@@ -149,7 +149,9 @@ export default class SQL {
 
         if (order) {
             for (let s = 0; s < order.length; s++) {
-                orderArr.push(`${Object.keys(order[s])[0]} ${Object.values(order[s])[0]}`);
+                if (Object.keys(order[s]).length > 0) {
+                    orderArr.push(`${Object.keys(order[s])[0]} ${Object.values(order[s])[0]}`);
+                }
             }
         }
 

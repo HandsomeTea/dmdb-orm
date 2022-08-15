@@ -32,3 +32,7 @@ const testModel = new Model<testTableModel>('test', {
 
 // eslint-disable-next-line no-console
 console.log(testModel.table);
+
+testModel.find({
+    order: [{ id: 'asc' }]
+});

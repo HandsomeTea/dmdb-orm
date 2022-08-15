@@ -19,9 +19,12 @@ export type WhereOption<M> = {
     [P in keyof M]?: M[P] | SQLOption<M, P>
 }
 
+type OneOf<T, P extends keyof T = keyof T> = { [K in P]-?: Required<Pick<T, K>> & Partial<Record<Exclude<P, K>, never>>; }[P];
+
 export interface QueryOption<M> {
     where?: WhereOption<M> & { $or?: Array<WhereOption<M>> }
-    order?: Array<{ [P in keyof M]?: 'asc' | 'desc' }>
+    /** 数组每项应为一对键值对 */
+    order?: Array<OneOf<Record<keyof M, 'asc' | 'desc'>>>
     limit?: number
     offset?: number
 }

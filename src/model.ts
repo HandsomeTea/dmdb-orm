@@ -10,7 +10,9 @@ import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
 const SQL = new Sql();
 
-export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
+export type DmType = { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' };
+
+const dmType: DmType = {
     DATE: 'DATE',
     NUMBER: 'NUMBER',
     STRING: 'STRING'
@@ -63,10 +65,10 @@ export class Model<TB>{
 
         this.tableModel = {
             ...struct,
-            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } :
-                ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: DmType.DATE } } : {},
-            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.DATE } } :
-                ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: DmType.DATE } } : {}
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: dmType.DATE } } :
+                ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: dmType.DATE } } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: dmType.DATE } } :
+                ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: dmType.DATE } } : {}
         };
     }
 
@@ -176,13 +178,13 @@ export class Model<TB>{
         return _data;
     }
 
-    public async insert(data: TB): Promise<void> {
+    public async save(data: TB): Promise<void> {
         const sql = SQL.getInsertSql(this.formatInsertData(data), { tableName: this.tableName, ...this.timestamp });
 
         await this.exec(sql);
     }
 
-    public async insertMany(data: Array<TB>): Promise<void> {
+    public async saveMany(data: Array<TB>): Promise<void> {
         let sql = '';
 
         for (let s = 0; s < data.length; s++) {
@@ -233,7 +235,7 @@ export class Model<TB>{
         if (data) {
             await this.update(uniqueQuery, update);
         } else {
-            await this.insert(insert);
+            await this.save(insert);
         }
     }
 

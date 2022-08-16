@@ -10,9 +10,7 @@ import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
 const SQL = new Sql();
 
-export type DmType = { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' };
-
-const dmType: DmType = {
+export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
     DATE: 'DATE',
     NUMBER: 'NUMBER',
     STRING: 'STRING'
@@ -65,10 +63,10 @@ export class Model<TB>{
 
         this.tableModel = {
             ...struct,
-            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: dmType.DATE } } :
-                ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: dmType.DATE } } : {},
-            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: dmType.DATE } } :
-                ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: dmType.DATE } } : {}
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } :
+                ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: DmType.DATE } } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.DATE } } :
+                ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: DmType.DATE } } : {}
         };
     }
 

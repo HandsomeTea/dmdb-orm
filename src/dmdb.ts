@@ -22,6 +22,7 @@ interface DmdbSetting {
 export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'iso', modelName: '' };
 
 export class DMServer {
+    private dmdbConnectionParams: dmdb.PoolAttributes;
     private service!: dmdb.Connection;
     private isReady = false;
     constructor(connect: dmdb.PoolAttributes, option: Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
@@ -46,11 +47,11 @@ export class DMServer {
             ORM_DMDB_SETTING.logger = logger;
         }
 
-        this.init(connect);
+        this.dmdbConnectionParams = connect;
     }
 
-    private async init(option: dmdb.PoolAttributes) {
-        const pool = await dmdb.createPool(option);
+    public async connect() {
+        const pool = await dmdb.createPool(this.dmdbConnectionParams);
 
         this.service = await pool.getConnection();
         ORM_DMDB_SERVER = this.service;

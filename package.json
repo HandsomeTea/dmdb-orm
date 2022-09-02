@@ -4,6 +4,7 @@
   "description": "dmdb orm",
   "main": "index.js",
   "scripts": {
+    "start": "./node_modules/.bin/ts-node-dev --respawn --transpile-only ./test/index.ts",
     "build": "./node_modules/.bin/tsc -d",
     "eslint": "./node_modules/.bin/eslint ./ --fix",
     "upgrade": "./node_modules/.bin/npm-check -u",
@@ -28,13 +29,24 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
+    "cross-env": "^7.0.3",
     "eslint": "^8.19.0",
     "husky": "^8.0.1",
+    "mocha": "^10.0.0",
     "npm-check": "^5.9.2",
+    "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.1.0",
     "typescript": "^4.7.4"
   },
   "dependencies": {
     "dmdb": "^1.0.11090"
+  },
+  "mocha": {
+    "require": [
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "ui": "bdd"
   }
 }

@@ -2,7 +2,8 @@ import { DMServer } from '../src/dmdb';
 import { Model, DmType } from '../src/model';
 
 new DMServer({
-    connectString: 'dm://SYSDBA:surpass1234@10.184.102.120:5236'
+    // connectString: 'dm://SYSDBA:surpass1234@10.184.102.120:5236'
+    connectString: 'dm://SYSDBA:SYSDBA@localhost:5236'
 }, {
     modelName: 'test',
     createdAt: true

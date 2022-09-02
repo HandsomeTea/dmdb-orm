@@ -20,13 +20,13 @@ export default class SQL {
     private getSqlValue(value: any) {
         const type = typeIs(value);
 
-        if (!new Set(['string', 'number', 'bigint', 'undefined', 'date', 'null']).has(type)) {
+        if (!new Set(['string', 'number', 'boolean', 'bigint', 'undefined', 'date', 'null']).has(type)) {
             throw new Error(`SQL does not support storage of this data type: ${type}`);
         }
 
         if (type === 'string') {
             return `'${value}'`;
-        } else if (type === 'number' || type === 'bigint') {
+        } else if (type === 'number' || type === 'boolean' || type === 'bigint') {
             return value;
         } else if (type === 'undefined' || type === 'null') {
             return 'null';

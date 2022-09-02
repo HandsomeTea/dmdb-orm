@@ -16,10 +16,17 @@ export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
     STRING: 'STRING'
 };
 
+export interface ModelOption {
+    modelName?: string
+    tenantId?: string | (() => string),
+    createdAt?: string | boolean
+    updatedAt?: string | boolean
+}
+
 export class Model<TB>{
     /** 初始化传入的表名 */
     private tName: string;
-    /** 在dmdb属于哪个模式 */
+    /** 在dmdb属于哪个模式，覆盖全局modelName的设置 */
     private modelName: string;
     private tenantId: string | (() => string) | undefined;
     private timestamp: {
@@ -28,16 +35,7 @@ export class Model<TB>{
     };
     private tableModel: DmModel<TB>;
 
-    constructor(
-        tableName: string,
-        struct: DmModel<TB>,
-        option?: {
-            modelName?: string
-            tenantId?: string | (() => string),
-            createdAt?: string | boolean
-            updatedAt?: string | boolean
-        }
-    ) {
+    constructor(tableName: string, struct: DmModel<TB>, option?: ModelOption) {
         this.tName = tableName;
         this.modelName = ORM_DMDB_SETTING.modelName;
         this.timestamp = {};
@@ -69,6 +67,11 @@ export class Model<TB>{
                 ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: DmType.DATE } } : {}
         };
     }
+
+    /** 如果表不存在，会创建表 */
+    // public async sync() {
+
+    // }
 
     public get model() {
         return this.tableModel;

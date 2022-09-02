@@ -1,8 +1,12 @@
+/* eslint-disable no-var */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import dmdb from 'dmdb';
 
-export interface DmdbCustomSetting {
+
+export var ORM_DMDB_SERVER: dmdb.Connection | null = null;
+
+interface DmdbSetting {
     modelName: string
     createdAt?: string
     updatedAt?: string
@@ -14,25 +18,15 @@ export interface DmdbCustomSetting {
     logger?: boolean | ((sql: string) => void)
 }
 
-// eslint-disable-next-line no-var
-export var ORM_DMDB_SERVER: dmdb.Connection | null = null;
-// eslint-disable-next-line no-var
-export var ORM_DMDB_SETTING: DmdbCustomSetting = { timezone: 'iso', modelName: '' };
 
+export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'iso', modelName: '' };
 
 export class DMServer {
     private service!: dmdb.Connection;
     private isReady = false;
-    constructor(connect: dmdb.PoolAttributes, option: {
-        modelName: string,
-        /** 时区取值，default: iso。
-         * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
-         * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
-         */
-        timezone?: 'iso' | 'local',
+    constructor(connect: dmdb.PoolAttributes, option: Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
         createdAt?: string | boolean,
         updatedAt?: string | boolean,
-        logger?: boolean | ((sql: string) => void)
     }) {
         this.isReady = false;
 

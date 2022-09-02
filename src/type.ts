@@ -23,7 +23,7 @@ type OneOf<T, P extends keyof T = keyof T> = { [K in P]-?: Required<Pick<T, K>> 
 
 export interface QueryOption<M> {
     where?: WhereOption<M> & { $or?: Array<WhereOption<M>> }
-    /** 数组每项应为一对键值对 */
+    /** 数组每项应为一对键值对，如：[{ id: 'asc' }] */
     order?: Array<OneOf<Record<keyof M, 'asc' | 'desc'>>>
     limit?: number
     offset?: number

@@ -2,7 +2,7 @@
 // @ts-ignore
 import dmdb from 'dmdb';
 
-import Sql from './sql';
+import Sql from './factory/sql';
 
 import { DmModel, QueryOption, UpdateOption } from './type';
 import { typeIs } from './utils';
@@ -102,25 +102,23 @@ export class Model<TB>{
         return this.tableName.replace(/"/g, '');
     }
 
-    private async exec(sql: string) {
-        return this.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
+    public get db() {
+        return ORM_DMDB_SERVER;
     }
 
-    public async execute(sql: string, bindParams: dmdb.BindParameters, options: dmdb.ExecuteOptions) {
+    private async execute(sql: string) {
         if (!ORM_DMDB_SERVER) {
             return;
         }
         if (ORM_DMDB_SETTING.logger) {
-            const str = Object.keys(bindParams).length > 0 ? JSON.stringify({ sql, bindParams }, null, '   ') : sql;
-
             if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
                 // eslint-disable-next-line no-console
-                console.debug(`dmdb execute sql: ${str}`);
+                console.debug(`dmdb execute sql: ${sql}`);
             } else {
-                ORM_DMDB_SETTING.logger(str);
+                ORM_DMDB_SETTING.logger(sql);
             }
         }
-        return await ORM_DMDB_SERVER.execute(sql, bindParams, options);
+        return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
     }
 
     private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {
@@ -178,7 +176,7 @@ export class Model<TB>{
     public async save(data: TB): Promise<void> {
         const sql = SQL.getInsertSql(this.formatInsertData(data), { tableName: this.tableName, ...this.timestamp });
 
-        await this.exec(sql);
+        await this.execute(sql);
     }
 
     public async saveMany(data: Array<TB>): Promise<void> {
@@ -187,13 +185,13 @@ export class Model<TB>{
         for (let s = 0; s < data.length; s++) {
             sql += SQL.getInsertSql(this.formatInsertData(data[s]), { tableName: this.tableName, ...this.timestamp });
         }
-        await this.exec(sql);
+        await this.execute(sql);
     }
 
     public async delete(query: Pick<QueryOption<TB>, 'where'>): Promise<void> {
         const sql = SQL.getDeleteSql(query, this.tableName);
 
-        await this.exec(sql);
+        await this.execute(sql);
     }
 
     public async update(query: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>): Promise<void> {
@@ -223,7 +221,7 @@ export class Model<TB>{
         }
         const sql = SQL.getUpdateSql(query, _update, { tableName: this.tableName, ...this.timestamp });
 
-        await this.exec(sql);
+        await this.execute(sql);
     }
 
     public async upsert(uniqueQuery: Pick<QueryOption<TB>, 'where'>, update: UpdateOption<TB>, insert: TB): Promise<void> {
@@ -244,7 +242,7 @@ export class Model<TB>{
         const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
         const sql = SQL.getSelectSql(query || {}, this.tableName, fields);
 
-        return (await this.exec(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
+        return (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>;
     }
 
     public async findOne(query: QueryOption<TB>): Promise<TB | null>
@@ -264,13 +262,13 @@ export class Model<TB>{
         const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, fields);
 
         return {
-            list: (await this.exec(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>,
+            list: (await this.execute(sql))?.rows?.map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) as Array<TB>,
             total: await this.count(query)
         };
     }
 
     public async count(query: QueryOption<TB>): Promise<number> {
-        const data = (await this.exec(SQL.getCountSql(query, this.tableName)))?.rows as Array<Record<string, number>>;
+        const data = (await this.execute(SQL.getCountSql(query, this.tableName)))?.rows as Array<Record<string, number>>;
 
         return Number(Object.values(data[0])[0]);
     }

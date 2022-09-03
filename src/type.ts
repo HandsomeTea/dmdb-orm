@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export interface SQLOption<M, P extends keyof M> {
+export interface SQLOption<M, P extends keyof M = keyof M> {
     $ne?: M[P]
     $in?: Array<M[P]>
     $notIn?: Array<M[P]>

@@ -1,7 +1,8 @@
 import { DMServer } from '../src/dmdb';
 import { Model, DmType } from '../src/model';
+import { DBError } from 'dmdb';
 
-new DMServer({
+const server = new DMServer({
     // connectString: 'dm://SYSDBA:surpass1234@10.184.102.120:5236'
     connectString: 'dm://SYSDBA:SYSDBA@localhost:5236'
 }, {
@@ -31,9 +32,9 @@ const testModel = new Model<testTableModel>('test', {
     }
 });
 
-// eslint-disable-next-line no-console
-console.log(testModel.table);
-
-testModel.find({
-    order: [{ id: 'asc' }]
-});
+server.connect().then(() => {
+    testModel.find({
+        order: [{ id: 'asc' }]
+    });
+    // eslint-disable-next-line no-console
+}).catch((e: DBError) => console.log(e.message));

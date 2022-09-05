@@ -1,9 +1,21 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OBJECT = Record<string, any>;
 
+export const DmStringType = {
+    STRING: 'VARCHAR(255)',
+    CHAR: (len: number) => `CHAR(${len})`,
+    CHARACTER: (len: number) => `CHARACTER(${len})`,
+    VARCHAR: (len: number) => `VARCHAR(${len})`,
+    VARCHAR2: (len: number) => `VARCHAR2(${len})`
+};
+
 export const DmType = {
     // date
     DATE: 'DATE',
+
+    // boolean
+    BOOLEAN: 'BOOLEAN', // commit
+    BIT: 'BIT',
 
     // number
     INTEGER: 'INTEGER',
@@ -14,11 +26,7 @@ export const DmType = {
     SMALLINT: 'SMALLINT',
 
     // string
-    STRING: 'VARCHAR(255)',
-    CHAR: (len: number) => `CHAR(${len})`,
-    CHARACTER: (len: number) => `CHARACTER(${len})`,
-    VARCHAR: (len: number) => `VARCHAR(${len})`,
-    VARCHAR2: (len: number) => `VARCHAR2(${len})`
+    ...DmStringType
 } as const;
 
 export type DmdbDataType = typeof DmType;
@@ -66,7 +74,9 @@ export interface DmModelOption {
 
 export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
     type: DmdbDataType[keyof DmdbDataType]
-    set?: (a: unknown) => M[K],
+    allowNull?: boolean
+    comment?: string
+    set?: (a: unknown) => M[K]
     defaultValue?: M[K] | (() => M[K])
 }
 

@@ -86,7 +86,9 @@ class SQL {
     }
 
     public getDeleteSql(query: Pick<QueryOption<Model>, 'where'>, tableName: string): string {
-        return `delete from ${tableName} ${this.getQueryOption(query)};`;
+        const _tableName = tableName.replace(/"/g, '').replace('.', '_');
+
+        return `delete from ${tableName} as ${_tableName} ${this.getQueryOption(query)};`;
     }
 
     public getUpdateSql(query: Pick<QueryOption<Model>, 'where'>, update: UpdateOption<Model>, option: { tableName: string, updatedAt?: string }): string {

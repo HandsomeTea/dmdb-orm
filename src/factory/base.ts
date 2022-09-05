@@ -40,10 +40,11 @@ export default new class UtilFactory {
 
     public where(where: WhereOption<OBJECT>): Array<string> {
         const arr: Array<string> = [];
-        const isVal = new Set(['null', true, false]);
+        const isVal = new Set(['null']);
 
         for (const key in where) {
             const option = where[key];
+            const sqlKey = `"${key}"`;
 
             if (typeIs(option) === 'object'
                 && (typeof option.$between !== 'undefined' ||
@@ -113,25 +114,22 @@ export default new class UtilFactory {
             } else {
                 const value = this.getSqlValue(option);
 
-                arr.push(isVal.has(value) ? `${key} is ${value}` : `${key}=${value}`);
+                arr.push(isVal.has(value) ? `${key} is ${value}` : `${sqlKey} = ${value}`);
             }
         }
         return arr;
     }
 
     public update(update: UpdateOption<OBJECT>): string {
-        if (Object.keys(update).length === 0) {
-            throw new Error('one field must be updated at least!');
-        }
         const arr: Array<string> = [];
 
         for (const key in update) {
             const aa = update[key];
 
             if (aa.$pull && aa.$split) {
-                arr.push(`${key}=replace(replace(${key}, '${aa.$pull}${aa.$split}', ''), '${aa.$pull}', '')`);
+                arr.push(`"${key}"=replace(replace(${key}, '${aa.$pull}${aa.$split}', ''), '${aa.$pull}', '')`);
             } else {
-                arr.push(`${key}=${this.getSqlValue(update[key])}`);
+                arr.push(`"${key}"=${this.getSqlValue(update[key])}`);
             }
         }
         return arr.join(', ');

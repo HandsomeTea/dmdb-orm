@@ -2,7 +2,7 @@ import dmdb from 'dmdb';
 
 import { typeIs } from './utils';
 import SQL from './factory/sql';
-import { DmModel, QueryOption, UpdateOption, DmType, OBJECT, DmModelOption } from './type';
+import { DmModel, QueryOption, UpdateOption, DmType, OBJECT, DmModelOption, DmStringType } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
 export class Model<TB extends OBJECT> {
@@ -21,6 +21,14 @@ export class Model<TB extends OBJECT> {
         this.tName = tableName;
         this.modelName = ORM_DMDB_SETTING.modelName;
         this.timestamp = {};
+
+        if (ORM_DMDB_SETTING.createdAt) {
+            this.timestamp.createdAt = ORM_DMDB_SETTING.createdAt;
+        }
+
+        if (ORM_DMDB_SETTING.updatedAt) {
+            this.timestamp.updatedAt = ORM_DMDB_SETTING.updatedAt;
+        }
 
         if (option) {
             const { tenantId, modelName, createdAt, updatedAt } = option;
@@ -43,20 +51,34 @@ export class Model<TB extends OBJECT> {
 
         this.tableModel = {
             ...struct,
-            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } :
-                ORM_DMDB_SETTING.createdAt ? { [ORM_DMDB_SETTING.createdAt]: { type: DmType.DATE } } : {},
-            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.DATE } } :
-                ORM_DMDB_SETTING.updatedAt ? { [ORM_DMDB_SETTING.updatedAt]: { type: DmType.DATE } } : {}
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.DATE } } : {}
         };
     }
 
     /** 如果表不存在，会创建表 */
     public async sync() {
-        // CREATE TABLE IF NOT EXISTS "testDB"."TABLE_1"
-        // (
-        // "COLUMN_1" CHAR(10)
-        // )
-        // STORAGE(ON "MAIN", CLUSTERBTR) ;
+        const commentInfo: Record<string, string> = {};
+        const sql = `CREATE TABLE IF NOT EXISTS ${this.tableName} (` +
+            Object.keys(this.model).map(a => {
+                const { allowNull, type, comment } = this.model[a];
+
+                if (comment) {
+                    commentInfo[a] = comment;
+                }
+
+                return `"${a}" ${type === DmType.BOOLEAN ? DmType.BIT : type} ${allowNull === false ? 'NOT NULL' : ''}`;
+            }).join(',') +
+            ') STORAGE(ON "MAIN", CLUSTERBTR);';
+
+        await this.execute(sql);
+        const commentKey = Object.keys(commentInfo);
+
+        if (commentKey.length > 0) {
+            for (let s = 0; s < commentKey.length; s++) {
+                await this.execute(`COMMENT ON COLUMN ${this.tableName}."${commentKey[s]}" IS '${commentInfo[commentKey[s]]}';`);
+            }
+        }
     }
 
     public get model() {
@@ -92,10 +114,7 @@ export class Model<TB extends OBJECT> {
         return ORM_DMDB_SERVER;
     }
 
-    private async execute(sql: string) {
-        if (!ORM_DMDB_SERVER) {
-            return;
-        }
+    private logSql(sql: string) {
         if (ORM_DMDB_SETTING.logger) {
             if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
                 // eslint-disable-next-line no-console
@@ -104,31 +123,56 @@ export class Model<TB extends OBJECT> {
                 ORM_DMDB_SETTING.logger(sql);
             }
         }
+    }
+
+    private async execute(sql: string) {
+        if (!ORM_DMDB_SERVER) {
+            return;
+        }
+
+        this.logSql(sql);
         return await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
+    }
+
+    private async executeMany(sql: string | Array<string>) {
+        if (!ORM_DMDB_SERVER) {
+            return;
+        }
+        const _sql = typeof sql === 'string' ? sql : sql.join('');
+
+        this.logSql(_sql);
+        return await ORM_DMDB_SERVER.executeMany(_sql, 1);
     }
 
     private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {
         const struct = { ...this.tableModel };
         const data: { [P in keyof TB]?: TB[P] } = {};
 
-        for (const key in projection) {
-            if (typeof dbData[key] !== 'undefined') {
-                // const { type } = struct[key];
-
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                data[key] = dbData[key];
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                if (struct[key].type === 'STRING') {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    data[key] = `${data[key]}`.trim();
-                }
-            } else {
+        for (const key of projection) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            if (typeof dbData[key] === 'undefined') {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 data[key] = null;
+                continue;
+            }
+            const { type } = struct[key];
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            if (Object.keys(DmStringType).includes(type)) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                data[key] = `${data[key]}`.trim();
+            } else if (type === DmType.BOOLEAN) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                data[key] = dbData[key] === 1 ? true : false;
+            } else {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                data[key] = dbData[key];
             }
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -141,9 +185,9 @@ export class Model<TB extends OBJECT> {
         const _data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in struct) {
-            const { set, defaultValue } = struct[key];
+            const { set, defaultValue, type } = struct[key];
 
-            if (set || defaultValue) {
+            if (typeof set !== 'undefined' || typeof defaultValue !== 'undefined') {
                 if (typeof defaultValue !== 'undefined' && typeof data[key] === 'undefined') {
                     if (typeof defaultValue !== 'function') {
                         _data[key] = defaultValue;
@@ -160,10 +204,27 @@ export class Model<TB extends OBJECT> {
             if (typeof _data[key] === 'undefined' && typeof data[key] !== 'undefined') {
                 _data[key] = data[key];
             }
+            if (type === DmType.BOOLEAN) {
+                if (data[key] === true) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    _data[key] = 1;
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    _data[key] = 0;
+                }
+            }
         }
+        const time = new Date();
+
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return _data;
+        return {
+            ..._data,
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: time } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: time } : {}
+        };
     }
 
     /**  */
@@ -183,7 +244,7 @@ export class Model<TB extends OBJECT> {
         for (let s = 0; s < data.length; s++) {
             sql += SQL.getInsertSql(this.formatInsertData(data[s]), { tableName: this.tableName, ...this.timestamp });
         }
-        await this.execute(sql);
+        await this.executeMany(sql);
     }
 
     public async delete(query: Pick<QueryOption<TB>, 'where'>): Promise<void> {
@@ -197,7 +258,7 @@ export class Model<TB extends OBJECT> {
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
-            const { set } = struct[key];
+            const { set, type } = struct[key];
 
             if (set) {
                 if (!typeIs(update[key], 'object')) {
@@ -211,11 +272,18 @@ export class Model<TB extends OBJECT> {
                     // @ts-ignore
                     _update[key] = { ...update[key], $pull: set(update[key].$pull) };
                 }
+            } else if (type === DmType.BOOLEAN) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                _update[key] = update[key] === true ? 1 : 0;
             } else {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 _update[key] = update[key];
             }
+        }
+        if (Object.keys(_update).length === 0) {
+            return;
         }
         const sql = SQL.getUpdateSql(query, _update, { tableName: this.tableName, ...this.timestamp });
 
@@ -265,8 +333,8 @@ export class Model<TB extends OBJECT> {
         };
     }
 
-    public async count(query: QueryOption<TB>): Promise<number> {
-        const data = (await this.execute(SQL.getCountSql(query, this.tableName)))?.rows as Array<Record<string, number>>;
+    public async count(query?: QueryOption<TB>): Promise<number> {
+        const data = (await this.execute(SQL.getCountSql(query || {}, this.tableName)))?.rows as Array<Record<string, number>>;
 
         return Number(Object.values(data[0])[0]);
     }

@@ -1,4 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type OBJECT = Record<string, any>;
+
+export const DmType = {
+    // date
+    DATE: 'DATE',
+
+    // number
+    INTEGER: 'INTEGER',
+    INT: 'INT',
+    BIGINT: 'BIGINT',
+    TINYINT: 'TINYINT',
+    BYTE: 'BYTE',
+    SMALLINT: 'SMALLINT',
+
+    // string
+    STRING: 'VARCHAR(255)',
+    CHAR: (len: number) => `CHAR(${len})`,
+    CHARACTER: (len: number) => `CHARACTER(${len})`,
+    VARCHAR: (len: number) => `VARCHAR(${len})`,
+    VARCHAR2: (len: number) => `VARCHAR2(${len})`
+} as const;
+
+export type DmdbDataType = typeof DmType;
 
 export interface SQLOption<M, P extends keyof M = keyof M> {
     $ne?: M[P]
@@ -34,12 +57,19 @@ export type UpdateOption<M> = {
     [P in keyof M]?: M[P] extends string ? (string | { $pull: M[P], $split: ',' }) : M[P]
 }
 
-export interface DmModelOption<M extends Record<string, any>, K extends keyof M> {
-    type: 'DATE' | 'NUMBER' | 'STRING'
+export interface DmModelOption {
+    modelName?: string
+    tenantId?: string | (() => string),
+    createdAt?: string | boolean
+    updatedAt?: string | boolean
+}
+
+export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
+    type: DmdbDataType[keyof DmdbDataType]
     set?: (a: unknown) => M[K],
     defaultValue?: M[K] | (() => M[K])
 }
 
-export type DmModel<M extends Record<string, any>> = {
-    [K in keyof M]: DmModelOption<M, K>
+export type DmModel<M extends OBJECT> = {
+    [K in keyof M]: DmModelConfig<M, K>
 }

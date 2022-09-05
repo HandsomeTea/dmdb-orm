@@ -4,7 +4,7 @@ import util from './base';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Model = Record<string, any>;
 
-export default class SQL {
+class SQL {
     constructor() {
         //
     }
@@ -128,3 +128,5 @@ export default class SQL {
         return `select count(*) as count from ${tableName} ${this.getQueryOption(query)};`;
     }
 }
+
+export default new SQL();

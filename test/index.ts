@@ -1,13 +1,13 @@
 import { DMServer } from '../src/dmdb';
-import { Model, DmType } from '../src/model';
+import { Model, DmType } from '../index';
 import { DBError } from 'dmdb';
 
 const server = new DMServer({
-    // connectString: 'dm://SYSDBA:surpass1234@10.184.102.120:5236'
-    connectString: 'dm://SYSDBA:SYSDBA@localhost:5236'
+    connectString: 'dm://SYSDBA:SYSDBA@10.184.102.101:5236'
 }, {
-    modelName: 'test',
-    createdAt: true
+    modelName: 'testDB',
+    createdAt: true,
+    logger: true
 });
 
 interface testTableModel {
@@ -22,7 +22,7 @@ const testModel = new Model<testTableModel>('test', {
         type: DmType.STRING
     },
     f1: {
-        type: DmType.NUMBER
+        type: DmType.INTEGER
     },
     f2: {
         type: DmType.STRING
@@ -30,9 +30,11 @@ const testModel = new Model<testTableModel>('test', {
     f3: {
         type: DmType.DATE
     }
-});
+}, {});
 
-server.connect().then(() => {
+server.connect().then(async () => {
+
+    await testModel.sync();
     testModel.find({
         order: [{ id: 'asc' }]
     });

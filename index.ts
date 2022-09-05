@@ -1,5 +1,16 @@
-export { DMServer } from './src/dmdb';
+export {
+    DMServer,
+    DmServerOption
+} from './src/dmdb';
 
-export { Model, DmType } from './src/model';
+export { Model } from './src/model';
 
-export { WhereOption, QueryOption, UpdateOption, DmModel, DmModelOption } from './src/type';
+export {
+    DmModel,
+    DmModelOption,
+    DmModelConfig,
+    DmType,
+    WhereOption,
+    QueryOption,
+    UpdateOption
+} from './src/type';

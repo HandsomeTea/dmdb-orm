@@ -18,6 +18,10 @@ interface DmdbSetting {
     logger?: boolean | ((sql: string) => void)
 }
 
+export type DmServerOption = Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
+    createdAt?: string | boolean,
+    updatedAt?: string | boolean,
+}
 
 export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'iso', modelName: '' };
 
@@ -25,10 +29,7 @@ export class DMServer {
     private dmdbConnectionParams: dmdb.PoolAttributes;
     private service!: dmdb.Connection;
     private isReady = false;
-    constructor(connect: dmdb.PoolAttributes, option: Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
-        createdAt?: string | boolean,
-        updatedAt?: string | boolean,
-    }) {
+    constructor(connect: dmdb.PoolAttributes, option: DmServerOption) {
         this.isReady = false;
 
         const { modelName, createdAt, updatedAt, timezone, logger } = option;
@@ -54,8 +55,24 @@ export class DMServer {
         const pool = await dmdb.createPool(this.dmdbConnectionParams);
 
         this.service = await pool.getConnection();
-        ORM_DMDB_SERVER = this.service;
-        this.isReady = true;
+        const testSql = 'SELECT 1+1 AS result';
+
+        if (ORM_DMDB_SETTING.logger) {
+            if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
+                // eslint-disable-next-line no-console
+                console.debug(`dmdb execute sql: ${testSql}`);
+            } else {
+                ORM_DMDB_SETTING.logger(testSql);
+            }
+        }
+        const test = await this.service.execute(testSql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (test.rows[0].RESULT === 2) {
+            ORM_DMDB_SERVER = this.service;
+            this.isReady = true;
+        }
     }
 
     public get server() {

@@ -1,29 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import dmdb from 'dmdb';
 
-import Sql from './factory/sql';
-
-import { DmModel, QueryOption, UpdateOption } from './type';
 import { typeIs } from './utils';
+import SQL from './factory/sql';
+import { DmModel, QueryOption, UpdateOption, DmType, OBJECT, DmModelOption } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 
-const SQL = new Sql();
-
-export const DmType: { DATE: 'DATE', NUMBER: 'NUMBER', STRING: 'STRING' } = {
-    DATE: 'DATE',
-    NUMBER: 'NUMBER',
-    STRING: 'STRING'
-};
-
-export interface ModelOption {
-    modelName?: string
-    tenantId?: string | (() => string),
-    createdAt?: string | boolean
-    updatedAt?: string | boolean
-}
-
-export class Model<TB>{
+export class Model<TB extends OBJECT> {
     /** 初始化传入的表名 */
     private tName: string;
     /** 在dmdb属于哪个模式，覆盖全局modelName的设置 */
@@ -35,7 +17,7 @@ export class Model<TB>{
     };
     private tableModel: DmModel<TB>;
 
-    constructor(tableName: string, struct: DmModel<TB>, option?: ModelOption) {
+    constructor(tableName: string, struct: DmModel<TB>, option?: DmModelOption) {
         this.tName = tableName;
         this.modelName = ORM_DMDB_SETTING.modelName;
         this.timestamp = {};
@@ -69,16 +51,20 @@ export class Model<TB>{
     }
 
     /** 如果表不存在，会创建表 */
-    // public async sync() {
-
-    // }
+    public async sync() {
+        // CREATE TABLE IF NOT EXISTS "testDB"."TABLE_1"
+        // (
+        // "COLUMN_1" CHAR(10)
+        // )
+        // STORAGE(ON "MAIN", CLUSTERBTR) ;
+    }
 
     public get model() {
         return this.tableModel;
     }
 
     /** 最终所得的表名 */
-    private get tableName() {
+    private get tableName(): `"${string}"."${string}"` {
         let tId: string | null = null;
 
         if (this.tenantId) {
@@ -129,12 +115,19 @@ export class Model<TB>{
             if (typeof dbData[key] !== 'undefined') {
                 // const { type } = struct[key];
 
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 data[key] = dbData[key];
-
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 if (struct[key].type === 'STRING') {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
                     data[key] = `${data[key]}`.trim();
                 }
             } else {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 data[key] = null;
             }
         }
@@ -171,6 +164,11 @@ export class Model<TB>{
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return _data;
+    }
+
+    /**  */
+    public async drop(): Promise<void> {
+        await this.execute(`drop table ${this.tableName};`);
     }
 
     public async save(data: TB): Promise<void> {

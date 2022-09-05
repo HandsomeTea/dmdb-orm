@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ORM_DMDB_SETTING } from '../dmdb';
-import { SQLOption, UpdateOption, WhereOption } from '../type';
+import { OBJECT, SQLOption, UpdateOption, WhereOption } from '../type';
 import { typeIs } from '../utils';
 
 
@@ -38,7 +38,7 @@ export default new class UtilFactory {
         }
     }
 
-    public where(where: WhereOption<Record<string, any>>): Array<string> {
+    public where(where: WhereOption<OBJECT>): Array<string> {
         const arr: Array<string> = [];
         const isVal = new Set(['null', true, false]);
 
@@ -58,7 +58,7 @@ export default new class UtilFactory {
                     typeof option.$regexp !== 'undefined' ||
                     typeof option.useFn !== 'undefined'
                 )) {
-                const { $between, $gt, $gte, $in, $like, $lt, $lte, $ne, $notIn, $regexp, useFn } = option as SQLOption<Record<string, any>>;
+                const { $between, $gt, $gte, $in, $like, $lt, $lte, $ne, $notIn, $regexp, useFn } = option as SQLOption<OBJECT>;
 
                 if ($between) {
                     arr.push(`${key} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);
@@ -119,7 +119,7 @@ export default new class UtilFactory {
         return arr;
     }
 
-    public update(update: UpdateOption<Record<string, any>>): string {
+    public update(update: UpdateOption<OBJECT>): string {
         if (Object.keys(update).length === 0) {
             throw new Error('one field must be updated at least!');
         }

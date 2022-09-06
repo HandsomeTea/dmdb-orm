@@ -71,7 +71,7 @@ class SQL {
     }
 
     private getAliasTableName(tableName: string) {
-        return tableName.replace(/"/g, '').replace('.', '_');
+        return `"${tableName.replace(/"/g, '').replace('.', '_')}"`;
     }
 
     public getInsertSql(data: Model, option: { tableName: string, createdAt?: string, updatedAt?: string }): string {
@@ -117,7 +117,7 @@ class SQL {
         const fields = projection.map(a => `"${a}"`).join(', ');
         const _tableName = this.getAliasTableName(tableName);
 
-        return `select ${fields} as ${_tableName} from ${tableName} ${this.getQueryOption(query, _tableName)};`;
+        return `select ${fields} from ${tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)};`;
     }
 
     public getPageSql(query: QueryOption<Model>, option: { skip: number, limit: number, tableName: string }, projection: Array<keyof Model>): string {

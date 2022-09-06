@@ -71,8 +71,11 @@ export interface DmModelOption {
 
 export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
     type: string
+    primaryKey?: boolean
     allowNull?: boolean
     comment?: string
+    unique?: boolean
+    autoIncrement?: boolean
     set?: (a: unknown) => M[K]
     defaultValue?: M[K] | (() => M[K])
 }

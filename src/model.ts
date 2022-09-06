@@ -58,17 +58,43 @@ export class Model<TB extends OBJECT> {
     /** 如果表不存在，会创建表 */
     public async sync() {
         const commentInfo: Record<string, string> = {};
+        let primarySql = '';
+        let uniqueSql = '';
         const sql = `CREATE TABLE IF NOT EXISTS ${this.tableName} (` +
             Object.keys(this.model).map(a => {
-                const { allowNull, type, comment } = this.model[a];
+                let str = `"${a}"`;
+                const { type, primaryKey, allowNull, comment, unique, autoIncrement } = this.model[a];
+
+                if (type === DmType.BOOLEAN) {
+                    str += ` ${DmType.BIT}`;
+                } else {
+                    str += ` ${type}`;
+                }
+
+                if (primaryKey) {
+                    primarySql = `, PRIMARY KEY("${a}")`;
+                }
+
+                if (allowNull === false) {
+                    str += ' NOT NULL';
+                }
 
                 if (comment) {
                     commentInfo[a] = comment;
                 }
 
-                return `"${a}" ${type === DmType.BOOLEAN ? DmType.BIT : type} ${allowNull === false ? 'NOT NULL' : ''}`;
-            }).join(',') +
-            ') STORAGE(ON "MAIN", CLUSTERBTR);';
+                if (unique) {
+                    uniqueSql += `, UNIQUE("${a}")`;
+                }
+
+                if (autoIncrement) {
+                    str += ' IDENTITY(1, 1)';
+                }
+                return str;
+            }).join(', ') +
+            primarySql +
+            uniqueSql +
+            ');';
 
         await this.execute(sql);
         const commentKey = Object.keys(commentInfo);
@@ -257,7 +283,7 @@ export class Model<TB extends OBJECT> {
             const { set, allowNull, type } = struct[key];
 
             if (allowNull === false && new Set(['null', 'undefined']).has(typeof update[key])) {
-                throw Error(`${this.table}.${key} is not allowned null`);
+                throw Error(`[${this.table}.${key}]不允许为null`);
             }
 
             if (set) {

@@ -8,7 +8,7 @@ export default new class UtilFactory {
         const type = typeIs(value);
 
         if (!new Set(['string', 'number', 'boolean', 'bigint', 'undefined', 'date', 'null']).has(type)) {
-            throw new Error(`SQL does not support storage of this data type: ${type}`);
+            throw new Error(`暂不支持该数据类型: ${type}`);
         }
 
         if (type === 'string') {

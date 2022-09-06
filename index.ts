@@ -5,11 +5,12 @@ export {
 
 export { Model } from './src/model';
 
+export { DmType } from './src/data-type';
+
 export {
     DmModel,
     DmModelOption,
     DmModelConfig,
-    DmType,
     WhereOption,
     QueryOption,
     UpdateOption

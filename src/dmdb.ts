@@ -55,7 +55,7 @@ export class DMServer {
         const pool = await dmdb.createPool(this.dmdbConnectionParams);
 
         this.service = await pool.getConnection();
-        const testSql = 'SELECT 1+1 AS result';
+        const testSql = 'SELECT 1+1 AS "result"';
 
         if (ORM_DMDB_SETTING.logger) {
             if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
@@ -69,7 +69,7 @@ export class DMServer {
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (test.rows[0].RESULT === 2) {
+        if (test.rows[0].result === 2) {
             ORM_DMDB_SERVER = this.service;
             this.isReady = true;
         }

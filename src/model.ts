@@ -2,8 +2,9 @@ import dmdb from 'dmdb';
 
 import { typeIs } from './utils';
 import SQL from './factory/sql';
-import { DmModel, QueryOption, UpdateOption, DmType, OBJECT, DmModelOption } from './type';
+import { DmModel, QueryOption, UpdateOption, OBJECT, DmModelOption } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
+import { DmType } from './data-type';
 
 export class Model<TB extends OBJECT> {
     /** 初始化传入的表名 */

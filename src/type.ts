@@ -1,31 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OBJECT = Record<string, any>;
+import { DmdbDataType } from './data-type';
 
-export const DmType = {
-    // date
-    DATE: 'DATE',
-
-    // boolean
-    BOOLEAN: 'BOOLEAN', // commit
-    BIT: 'BIT',
-
-    // number
-    INTEGER: 'INTEGER',
-    INT: 'INT',
-    BIGINT: 'BIGINT',
-    TINYINT: 'TINYINT',
-    BYTE: 'BYTE',
-    SMALLINT: 'SMALLINT',
-
-    // string
-    STRING: 'VARCHAR(255)',
-    CHAR: (len: number) => `CHAR(${len})`,
-    CHARACTER: (len: number) => `CHARACTER(${len})`,
-    VARCHAR: (len: number) => `VARCHAR(${len})`,
-    VARCHAR2: (len: number) => `VARCHAR2(${len})`
-} as const;
-
-export type DmdbDataType = typeof DmType;
+export type OBJECT = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export interface SQLOption<M, P extends keyof M = keyof M> {
     $ne?: M[P]
@@ -38,7 +13,6 @@ export interface SQLOption<M, P extends keyof M = keyof M> {
     $lt?: M[P]
     $gte?: M[P]
     $lte?: M[P]
-    // useFn?: { value: M[P], fn: DMFnType, useForCol?: boolean | DMFnType }
     useFn?: { value: M[P], fn: string, useForCol?: boolean | string }
 }
 
@@ -70,7 +44,7 @@ export interface DmModelOption {
 }
 
 export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
-    type: string
+    type: DmdbDataType[keyof DmdbDataType]
     primaryKey?: boolean
     allowNull?: boolean
     comment?: string

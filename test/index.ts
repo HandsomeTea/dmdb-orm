@@ -1,5 +1,4 @@
-import { DMServer } from '../src/dmdb';
-import { Model, DmType } from '../index';
+import { Model, DmType, DMServer } from '../index';
 import { DBError } from 'dmdb';
 
 const server = new DMServer({
@@ -11,15 +10,17 @@ const server = new DMServer({
 });
 
 interface testTableModel {
-    id: number
-    f1: string
+    id?: number
+    f1?: string
     f2: boolean
     f3: Date
 }
 
 const testModel = new Model<testTableModel>('test', {
     id: {
-        type: DmType.TINYINT
+        type: DmType.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
     },
     f1: {
         type: DmType.VARCHAR(255),
@@ -28,6 +29,7 @@ const testModel = new Model<testTableModel>('test', {
     },
     f2: {
         type: DmType.BOOLEAN,
+        unique: true,
         comment: 'boolean test'
     },
     f3: {
@@ -36,11 +38,10 @@ const testModel = new Model<testTableModel>('test', {
 }, {});
 
 server.connect().then(async () => {
-    // await testModel.sync();
+    await testModel.sync();
     // await testModel.save({
-    //     id: 4,
-    //     f1: 'test',
-    //     f2: false,
+    //     f1: 'null',
+    //     f2: true,
     //     f3: new Date()
     // });
     // await testModel.saveMany([{
@@ -60,9 +61,9 @@ server.connect().then(async () => {
     //     f2: true,
     //     f3: new Date()
     // });
-    await testModel.update({ where: { id: 4 } }, { f2: false });
+    // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
-    // console.log(await testModel.find());
+    console.log(await testModel.find());
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

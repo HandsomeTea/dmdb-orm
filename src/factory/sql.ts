@@ -1,8 +1,7 @@
 import { QueryOption, UpdateOption } from '../type';
 import util from './base';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Model = Record<string, any>;
+type Model = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 class SQL {
     constructor() {

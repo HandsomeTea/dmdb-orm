@@ -1,14 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OBJECT = Record<string, any>;
 
-export const DmStringType = {
-    STRING: 'VARCHAR(255)',
-    CHAR: (len: number) => `CHAR(${len})`,
-    CHARACTER: (len: number) => `CHARACTER(${len})`,
-    VARCHAR: (len: number) => `VARCHAR(${len})`,
-    VARCHAR2: (len: number) => `VARCHAR2(${len})`
-};
-
 export const DmType = {
     // date
     DATE: 'DATE',
@@ -26,7 +18,11 @@ export const DmType = {
     SMALLINT: 'SMALLINT',
 
     // string
-    ...DmStringType
+    STRING: 'VARCHAR(255)',
+    CHAR: (len: number) => `CHAR(${len})`,
+    CHARACTER: (len: number) => `CHARACTER(${len})`,
+    VARCHAR: (len: number) => `VARCHAR(${len})`,
+    VARCHAR2: (len: number) => `VARCHAR2(${len})`
 } as const;
 
 export type DmdbDataType = typeof DmType;
@@ -66,6 +62,7 @@ export type UpdateOption<M> = {
 }
 
 export interface DmModelOption {
+    /** 在dmdb属于哪个模式，覆盖全局modelName的设置 */
     modelName?: string
     tenantId?: string | (() => string),
     createdAt?: string | boolean
@@ -73,7 +70,7 @@ export interface DmModelOption {
 }
 
 export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
-    type: DmdbDataType[keyof DmdbDataType]
+    type: string
     allowNull?: boolean
     comment?: string
     set?: (a: unknown) => M[K]

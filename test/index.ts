@@ -22,7 +22,7 @@ const testModel = new Model<testTableModel>('test', {
         type: DmType.TINYINT
     },
     f1: {
-        type: DmType.STRING,
+        type: DmType.VARCHAR(255),
         allowNull: false,
         comment: 'f1comment'
     },
@@ -36,19 +36,32 @@ const testModel = new Model<testTableModel>('test', {
 }, {});
 
 server.connect().then(async () => {
-    await testModel.sync();
+    // await testModel.sync();
     // await testModel.save({
-    //     id: 3,
-    //     f1: '123sss',
-    //     f2: true,
+    //     id: 4,
+    //     f1: 'test',
+    //     f2: false,
     //     f3: new Date()
     // });
+    // await testModel.saveMany([{
+    //     id: 4,
+    //     f1: 'test',
+    //     f2: false,
+    //     f3: new Date()
+    // }, {
+    //     id: 4,
+    //     f1: 'test',
+    //     f2: false,
+    //     f3: new Date()
+    // }]);
     // await testModel.upsert({ where: { id: 3 } }, { f2: false }, {
     //     id: 4,
     //     f1: 'string',
     //     f2: true,
     //     f3: new Date()
     // });
+    await testModel.update({ where: { id: 4 } }, { f2: false });
+    // await testModel.delete({ where: { id: 4 } });
     // console.log(await testModel.find());
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
     // eslint-disable-next-line no-console

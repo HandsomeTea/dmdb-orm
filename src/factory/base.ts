@@ -1,14 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ORM_DMDB_SETTING } from '../dmdb';
 import { OBJECT, SQLOption, UpdateOption, WhereOption } from '../type';
 import { typeIs } from '../utils';
 
 
 export default new class UtilFactory {
-    constructor() {
-        //
-    }
-
     public getSqlValue(value: string | number | boolean | undefined | null | Date): string {
         const type = typeIs(value);
 
@@ -38,13 +33,13 @@ export default new class UtilFactory {
         }
     }
 
-    public where(where: WhereOption<OBJECT>): Array<string> {
+    public where(where: WhereOption<OBJECT>, tableAlias: string): Array<string> {
         const arr: Array<string> = [];
         const isVal = new Set(['null']);
 
         for (const key in where) {
             const option = where[key];
-            const sqlKey = `"${key}"`;
+            const sqlKey = `${tableAlias}."${key}"`;
 
             if (typeIs(option) === 'object'
                 && (typeof option.$between !== 'undefined' ||
@@ -120,16 +115,16 @@ export default new class UtilFactory {
         return arr;
     }
 
-    public update(update: UpdateOption<OBJECT>): string {
+    public update(update: UpdateOption<OBJECT>, tableAlias: string): string {
         const arr: Array<string> = [];
 
         for (const key in update) {
             const aa = update[key];
 
             if (aa.$pull && aa.$split) {
-                arr.push(`"${key}"=replace(replace(${key}, '${aa.$pull}${aa.$split}', ''), '${aa.$pull}', '')`);
+                arr.push(`${tableAlias}."${key}" = replace(replace(${key}, '${aa.$pull}${aa.$split}', ''), '${aa.$pull}', '')`);
             } else {
-                arr.push(`"${key}"=${this.getSqlValue(update[key])}`);
+                arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
             }
         }
         return arr.join(', ');

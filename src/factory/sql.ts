@@ -9,7 +9,7 @@ class SQL {
         //
     }
 
-    private getQueryOption(query: QueryOption<Model>): string {
+    private getQueryOption(query: QueryOption<Model>, tableAlias: string): string {
         const { where, order, offset = 0, limit } = query;
 
         const orArr: Array<string> = [];
@@ -20,13 +20,13 @@ class SQL {
 
             if ($or) {
                 for (let s = 0; s < $or.length; s++) {
-                    orArr.push(...util.where($or[s]));
+                    orArr.push(...util.where($or[s], tableAlias));
                 }
             }
             const _where = { ...where };
 
             delete _where.$or;
-            andArr.push(...util.where(_where));
+            andArr.push(...util.where(_where, tableAlias));
         }
 
         const orderArr: Array<string> = [];
@@ -70,6 +70,10 @@ class SQL {
         return str;
     }
 
+    private getAliasTableName(tableName: string) {
+        return tableName.replace(/"/g, '').replace('.', '_');
+    }
+
     public getInsertSql(data: Model, option: { tableName: string, createdAt?: string, updatedAt?: string }): string {
         if (option.createdAt) {
             data[option.createdAt] = new Date();
@@ -86,16 +90,18 @@ class SQL {
     }
 
     public getDeleteSql(query: Pick<QueryOption<Model>, 'where'>, tableName: string): string {
-        const _tableName = tableName.replace(/"/g, '').replace('.', '_');
+        const _tableName = this.getAliasTableName(tableName);
 
-        return `delete from ${tableName} as ${_tableName} ${this.getQueryOption(query)};`;
+        return `delete from ${tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)};`;
     }
 
     public getUpdateSql(query: Pick<QueryOption<Model>, 'where'>, update: UpdateOption<Model>, option: { tableName: string, updatedAt?: string }): string {
         if (option.updatedAt) {
             update[option.updatedAt] = new Date();
         }
-        return `update ${option.tableName} set ${util.update(update)} ${this.getQueryOption(query)};`;
+        const _tableName = this.getAliasTableName(option.tableName);
+
+        return `update ${option.tableName} as ${_tableName} set ${util.update(update, _tableName)} ${this.getQueryOption(query, _tableName)};`;
     }
 
     // public getUpsertSql(insert: Model, update: UpsertOption<Model>, tableName: string): string {
@@ -109,25 +115,22 @@ class SQL {
 
     public getSelectSql(query: QueryOption<Model>, tableName: string, projection: Array<keyof Model>): string {
         const fields = projection.map(a => `"${a}"`).join(', ');
-        // const name = tableName.split('.');
-        // const tbName = name.length > 1 ? `${tableName} as ${name[1]}` : tableName;
+        const _tableName = this.getAliasTableName(tableName);
 
-        return `select ${fields} from ${tableName} ${this.getQueryOption(query)};`;
+        return `select ${fields} as ${_tableName} from ${tableName} ${this.getQueryOption(query, _tableName)};`;
     }
 
     public getPageSql(query: QueryOption<Model>, option: { skip: number, limit: number, tableName: string }, projection: Array<keyof Model>): string {
         const fields = projection.map(a => `"${a}"`).join(', ');
-        // const name = option.tableName.split('.');
-        // const tbName = name.length > 1 ? `${option.tableName} as ${name[1]}` : option.tableName;
+        const _tableName = this.getAliasTableName(option.tableName);
 
-        return `select ${fields} from ${option.tableName} ${this.getQueryOption(query)} limit ${option.skip}, ${option.limit};`;
+        return `select ${fields} as ${_tableName} from ${option.tableName} ${this.getQueryOption(query, _tableName)} limit ${option.skip}, ${option.limit};`;
     }
 
     public getCountSql(query: QueryOption<Model>, tableName: string): string {
-        // const name = tableName.split('.');
-        // const tbName = name.length > 1 ? `${tableName} as ${name[1]}` : tableName;
+        const _tableName = this.getAliasTableName(tableName);
 
-        return `select count(*) as count from ${tableName} ${this.getQueryOption(query)};`;
+        return `select count(*) as count from ${tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)};`;
     }
 }
 

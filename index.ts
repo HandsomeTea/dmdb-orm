@@ -10,7 +10,7 @@ export { DmType } from './src/data-type';
 export {
     DmModel,
     DmModelOption,
-    DmModelConfig,
+    DmModelAttributes,
     WhereOption,
     QueryOption,
     UpdateOption

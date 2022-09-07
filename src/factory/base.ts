@@ -7,7 +7,7 @@ export default new class UtilFactory {
     public getSqlValue(value: string | number | boolean | undefined | null | Date): string {
         const type = typeIs(value);
 
-        if (!new Set(['string', 'number', 'bigint', 'undefined', 'date', 'null']).has(type)) {
+        if (!new Set(['string', 'number', 'bigint', 'boolean', 'undefined', 'date', 'null']).has(type)) {
             throw new Error(`暂不支持该数据类型: ${type}`);
         }
 
@@ -15,6 +15,8 @@ export default new class UtilFactory {
             return `'${value}'`;
         } else if (type === 'number' || type === 'bigint') {
             return `${value}`;
+        } else if (type === 'boolean') {
+            return `${value === true ? 1 : 0}`;
         } else if (type === 'undefined' || type === 'null') {
             return 'null';
         } else if (type === 'date') {
@@ -57,43 +59,43 @@ export default new class UtilFactory {
                 const { $between, $gt, $gte, $in, $like, $lt, $lte, $ne, $notIn, $regexp, useFn } = option as SQLOption<OBJECT>;
 
                 if ($between) {
-                    arr.push(`${key} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);
+                    arr.push(`${sqlKey} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);
                 }
                 if (typeof $gt !== 'undefined') {
-                    arr.push(`${key} > ${this.getSqlValue($gt)}`);
+                    arr.push(`${sqlKey} > ${this.getSqlValue($gt)}`);
                 }
                 if (typeof $gte !== 'undefined') {
-                    arr.push(`${key} >= ${this.getSqlValue($gte)}`);
+                    arr.push(`${sqlKey} >= ${this.getSqlValue($gte)}`);
                 }
                 if ($in) {
                     const _in = $in.map(a => this.getSqlValue(a));
 
-                    arr.push(`${key} in (${_in.join(', ')})`);
+                    arr.push(`${sqlKey} in (${_in.join(', ')})`);
                 }
                 if ($like) {
-                    arr.push(`${key} like '%${$like}%'`);
+                    arr.push(`${sqlKey} like '%${$like}%'`);
                 }
                 if (typeof $lt !== 'undefined') {
-                    arr.push(`${key} > ${this.getSqlValue($lt)}`);
+                    arr.push(`${sqlKey} > ${this.getSqlValue($lt)}`);
                 }
                 if (typeof $lte !== 'undefined') {
-                    arr.push(`${key} >= ${this.getSqlValue($lte)}`);
+                    arr.push(`${sqlKey} >= ${this.getSqlValue($lte)}`);
                 }
                 if (typeof $ne !== 'undefined') {
                     const value = this.getSqlValue($ne);
 
-                    arr.push(isVal.has(value) ? `${key} is not ${value}` : `${key}!=${value}`);
+                    arr.push(isVal.has(value) ? `${sqlKey} is not ${value}` : `${sqlKey} != ${value}`);
                 }
                 if ($notIn) {
                     const _notIn = $notIn.map(a => this.getSqlValue(a));
 
-                    arr.push(`${key} not in (${_notIn.join(', ')})`);
+                    arr.push(`${sqlKey} not in (${_notIn.join(', ')})`);
                 }
                 if ($regexp) {
                     let regStr = new RegExp($regexp as string | RegExp, '').toString();
 
                     regStr = regStr.substring(1, regStr.length - 1);
-                    arr.push(`${key} regexp ${regStr}`);
+                    arr.push(`${sqlKey} regexp ${regStr}`);
                 }
                 if (useFn) {
                     const { useForCol, fn, value } = useFn;
@@ -109,7 +111,7 @@ export default new class UtilFactory {
             } else {
                 const value = this.getSqlValue(option);
 
-                arr.push(isVal.has(value) ? `${key} is ${value}` : `${sqlKey} = ${value}`);
+                arr.push(isVal.has(value) ? `${sqlKey} is ${value}` : `${sqlKey} = ${value}`);
             }
         }
         return arr;
@@ -122,7 +124,8 @@ export default new class UtilFactory {
             const aa = update[key];
 
             if (aa.$pull && aa.$split) {
-                arr.push(`${tableAlias}."${key}" = replace(replace(${key}, '${aa.$pull}${aa.$split}', ''), '${aa.$pull}', '')`);
+                // arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}${aa.$split}', '')`);
+                arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}', '')`);
             } else {
                 arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
             }

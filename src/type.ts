@@ -32,7 +32,7 @@ export interface QueryOption<M> {
 
 // export type UpsertOption<M> = { [P in keyof M]?: M[P] }
 export type UpdateOption<M> = {
-    [P in keyof M]?: M[P] extends string ? (string | { $pull: M[P], $split: ',' }) : M[P]
+    [P in keyof M]?: M[P] extends string ? (string | { $pull: string, $split: ',' }) : M[P]
 }
 
 export interface DmModelOption {
@@ -43,7 +43,7 @@ export interface DmModelOption {
     updatedAt?: string | boolean
 }
 
-export interface DmModelConfig<M extends OBJECT, K extends keyof M = keyof M> {
+export interface DmModelAttributes<M extends OBJECT, K extends keyof M = keyof M> {
     type: DmdbDataType
     primaryKey?: boolean
     allowNull?: boolean
@@ -55,5 +55,5 @@ export interface DmModelConfig<M extends OBJECT, K extends keyof M = keyof M> {
 }
 
 export type DmModel<M extends OBJECT> = {
-    [K in keyof M]: DmModelConfig<M, K>
+    [K in keyof M]: DmModelAttributes<M, K>
 }

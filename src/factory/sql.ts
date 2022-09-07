@@ -123,7 +123,7 @@ class SQL {
         const fields = projection.map(a => `"${a}"`).join(', ');
         const _tableName = this.getAliasTableName(option.tableName);
 
-        return `select ${fields} as ${_tableName} from ${option.tableName} ${this.getQueryOption(query, _tableName)} limit ${option.skip}, ${option.limit};`;
+        return `select ${fields} from ${option.tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)} limit ${option.skip}, ${option.limit};`;
     }
 
     public getCountSql(query: QueryOption<Model>, tableName: string): string {

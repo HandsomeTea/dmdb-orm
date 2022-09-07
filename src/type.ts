@@ -43,8 +43,8 @@ export interface DmModelOption {
     updatedAt?: string | boolean
 }
 
-export interface DmModelConfig<M extends OBJECT, K extends keyof M> {
-    type: DmdbDataType[keyof DmdbDataType]
+export interface DmModelConfig<M extends OBJECT, K extends keyof M = keyof M> {
+    type: DmdbDataType
     primaryKey?: boolean
     allowNull?: boolean
     comment?: string

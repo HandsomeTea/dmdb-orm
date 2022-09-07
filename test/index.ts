@@ -23,7 +23,7 @@ const testModel = new Model<testTableModel>('test', {
         autoIncrement: true
     },
     f1: {
-        type: DmType.VARCHAR(255),
+        type: DmType.VARCHAR,
         allowNull: false,
         comment: 'f1comment'
     },
@@ -63,7 +63,7 @@ server.connect().then(async () => {
     // });
     // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
-    console.log(await testModel.find());
+    // console.log(await testModel.find());
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

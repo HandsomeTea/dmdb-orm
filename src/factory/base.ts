@@ -7,13 +7,13 @@ export default new class UtilFactory {
     public getSqlValue(value: string | number | boolean | undefined | null | Date): string {
         const type = typeIs(value);
 
-        if (!new Set(['string', 'number', 'boolean', 'bigint', 'undefined', 'date', 'null']).has(type)) {
+        if (!new Set(['string', 'number', 'bigint', 'undefined', 'date', 'null']).has(type)) {
             throw new Error(`暂不支持该数据类型: ${type}`);
         }
 
         if (type === 'string') {
             return `'${value}'`;
-        } else if (type === 'number' || type === 'boolean' || type === 'bigint') {
+        } else if (type === 'number' || type === 'bigint') {
             return `${value}`;
         } else if (type === 'undefined' || type === 'null') {
             return 'null';

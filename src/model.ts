@@ -64,9 +64,10 @@ export class Model<TB extends OBJECT> {
         const sql = `CREATE TABLE IF NOT EXISTS ${this.tableName} (` +
             Object.keys(this.model).map(a => {
                 let str = `"${a}"`;
-                const { type, primaryKey, allowNull, comment, unique, autoIncrement } = this.model[a];
+                const { primaryKey, allowNull, comment, unique, autoIncrement } = this.model[a];
+                const type = this.model[a].type.toString();
 
-                if (type === DmType.BOOLEAN) {
+                if (type === DmType.BOOLEAN.toString()) {
                     str += ` ${DmType.BIT}`;
                 } else {
                     str += ` ${type}`;
@@ -186,9 +187,9 @@ export class Model<TB extends OBJECT> {
                 data[key] = null;
                 continue;
             }
-            const { type } = struct[key];
+            const type = struct[key].type.toString();
 
-            if (type === DmType.BOOLEAN) {
+            if (type === DmType.BOOLEAN.toString()) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 data[key] = dbData[key] === 1 ? true : false;
@@ -208,7 +209,8 @@ export class Model<TB extends OBJECT> {
         const _data: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in struct) {
-            const { set, defaultValue, type } = struct[key];
+            const { set, defaultValue } = struct[key];
+            const type = struct[key].type.toString();
 
             if (typeof set !== 'undefined' || typeof defaultValue !== 'undefined') {
                 if (typeof defaultValue !== 'undefined' && typeof data[key] === 'undefined') {
@@ -227,7 +229,7 @@ export class Model<TB extends OBJECT> {
             if (typeof _data[key] === 'undefined' && typeof data[key] !== 'undefined') {
                 _data[key] = data[key];
             }
-            if (type === DmType.BOOLEAN) {
+            if (type === DmType.BOOLEAN.toString()) {
                 if (data[key] === true) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
@@ -281,7 +283,8 @@ export class Model<TB extends OBJECT> {
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
-            const { set, allowNull, type } = struct[key];
+            const { set, allowNull } = struct[key];
+            const type = struct[key].type.toString();
 
             if (allowNull === false && new Set(['null', 'undefined']).has(typeof update[key])) {
                 throw Error(`[${this.table}.${key}]不允许为null`);
@@ -299,7 +302,7 @@ export class Model<TB extends OBJECT> {
                     // @ts-ignore
                     _update[key] = { ...update[key], $pull: set(update[key].$pull) };
                 }
-            } else if (type === DmType.BOOLEAN) {
+            } else if (type === DmType.BOOLEAN.toString()) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 _update[key] = update[key] === true ? 1 : 0;

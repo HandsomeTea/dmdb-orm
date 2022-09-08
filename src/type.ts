@@ -30,9 +30,8 @@ export interface QueryOption<M> {
     offset?: number
 }
 
-// export type UpsertOption<M> = { [P in keyof M]?: M[P] }
 export type UpdateOption<M> = {
-    [P in keyof M]?: M[P] extends string ? (string | { $pull: string, $split: ',' }) : M[P]
+    [P in keyof M]?: M[P]
 }
 
 export interface DmModelOption {

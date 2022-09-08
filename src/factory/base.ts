@@ -121,14 +121,7 @@ export default new class UtilFactory {
         const arr: Array<string> = [];
 
         for (const key in update) {
-            const aa = update[key];
-
-            if (aa.$pull && aa.$split) {
-                // arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}${aa.$split}', '')`);
-                arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}', '')`);
-            } else {
-                arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
-            }
+            arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
         }
         return arr.join(', ');
     }

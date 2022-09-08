@@ -7,17 +7,23 @@ export interface SQLOption<M, P extends keyof M = keyof M> {
     $in?: Array<M[P]>
     $notIn?: Array<M[P]>
     $like?: string
+    $likeAny?: Array<string>
+    $notLike?: string
     $regexp?: string | RegExp
+    $notRegexp?: string | RegExp
     $between?: [M[P], M[P]]
+    $notBetween?: [M[P], M[P]]
     $gt?: M[P]
     $lt?: M[P]
     $gte?: M[P]
     $lte?: M[P]
+    $startsWith?: string
+    $endsWith?: string
     useFn?: { value: M[P], fn: string, useForCol?: boolean | string }
 }
 
 export type WhereOption<M> = {
-    [P in keyof M]?: M[P] | SQLOption<M, P>
+    [P in keyof M]?: M[P] | SQLOption<M>
 }
 
 type OneOf<T, P extends keyof T = keyof T> = { [K in P]-?: Required<Pick<T, K>> & Partial<Record<Exclude<P, K>, never>>; }[P];

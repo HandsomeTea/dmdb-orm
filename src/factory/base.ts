@@ -56,7 +56,8 @@ export default new class UtilFactory {
                     typeof option.$regexp !== 'undefined' ||
                     typeof option.useFn !== 'undefined'
                 )) {
-                const { $between, $gt, $gte, $in, $like, $lt, $lte, $ne, $notIn, $regexp, useFn } = option as SQLOption<OBJECT>;
+                const { $between, $notBetween, $gt, $gte, $in, $like, $notLike, $likeAny, $startsWith, $endsWith,
+                    $lt, $lte, $ne, $notIn, $regexp, $notRegexp, useFn } = option as SQLOption<OBJECT>;
 
                 if ($between) {
                     arr.push(`${sqlKey} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);

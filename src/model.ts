@@ -1,6 +1,6 @@
 import dmdb from 'dmdb';
 
-import { typeIs } from './utils';
+import { typeIs, logSql } from './utils';
 import SQL from './factory/sql';
 import { DmModel, QueryOption, UpdateOption, OBJECT, DmModelOption } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
@@ -142,23 +142,12 @@ export class Model<TB extends OBJECT> {
         return ORM_DMDB_SERVER;
     }
 
-    private logSql(sql: string) {
-        if (ORM_DMDB_SETTING.logger) {
-            if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
-                // eslint-disable-next-line no-console
-                console.debug(`dmdb execute sql: ${sql}`);
-            } else {
-                ORM_DMDB_SETTING.logger(sql);
-            }
-        }
-    }
-
     private async execute(sql: string) {
         if (!ORM_DMDB_SERVER) {
             return [];
         }
 
-        this.logSql(sql);
+        logSql(sql);
         const result = await ORM_DMDB_SERVER.execute(sql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
 
         return result.rows || [];
@@ -170,7 +159,7 @@ export class Model<TB extends OBJECT> {
         }
         const _sql = typeof sql === 'string' ? sql : sql.join('');
 
-        this.logSql(_sql);
+        logSql(_sql);
         return await ORM_DMDB_SERVER.executeMany(_sql, 1);
     }
 

@@ -2,6 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import dmdb from 'dmdb';
+import { logSql } from './utils';
 
 
 export var ORM_DMDB_SERVER: dmdb.Connection | null = null;
@@ -55,16 +56,9 @@ export class DMServer {
         const pool = await dmdb.createPool(this.dmdbConnectionParams);
 
         this.service = await pool.getConnection();
-        const testSql = 'SELECT 1+1 AS "result"';
+        const testSql = 'SELECT 1+1 AS "result";';
 
-        if (ORM_DMDB_SETTING.logger) {
-            if (typeof ORM_DMDB_SETTING.logger === 'boolean') {
-                // eslint-disable-next-line no-console
-                console.debug(`dmdb execute sql: ${testSql}`);
-            } else {
-                ORM_DMDB_SETTING.logger(testSql);
-            }
-        }
+        logSql(testSql);
         const test = await this.service.execute(testSql, [], { outFormat: dmdb.OUT_FORMAT_OBJECT });
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

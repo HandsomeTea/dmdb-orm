@@ -31,7 +31,7 @@ export interface QueryOption<M> {
 }
 
 export type UpdateOption<M> = {
-    [P in keyof M]?: M[P] extends string ? (string | { $pull: string | Array<string>, $split: ',' }) : M[P]
+    [P in keyof M]?: M[P] extends string ? (string | { $pull: string | Array<string>, $split: string }) : M[P]
 }
 
 export interface DmModelOption {

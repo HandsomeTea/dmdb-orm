@@ -1,21 +1,28 @@
 import BaseType from './base';
 
+/**
+ *
+ *
+ * @export
+ * @class DATE
+ */
 export class DATE {
     static toString() {
         return 'DATE';
     }
 }
 
-export class DATETIME extends BaseType {
-    constructor(accuracy: number) {
-        super('DATETIME', { acc: accuracy });
-    }
-
-    static toString() {
-        return 'DATETIME';
-    }
+export interface DateTypeConstructor {
+    new(): DATE;
 }
 
+/**
+ *
+ *
+ * @export
+ * @class TIME
+ * @extends {BaseType}
+ */
 export class TIME extends BaseType {
     constructor(accuracy: number) {
         super('TIME', { acc: accuracy });
@@ -26,6 +33,18 @@ export class TIME extends BaseType {
     }
 }
 
+export interface TimeConstructor {
+    new(accuracy: number): TIME;
+    (accuracy: number): TIME;
+}
+
+/**
+ *
+ *
+ * @export
+ * @class TIMESTAMP
+ * @extends {BaseType}
+ */
 export class TIMESTAMP extends BaseType {
     constructor(accuracy: number) {
         super('TIMESTAMP', { acc: accuracy });
@@ -34,4 +53,31 @@ export class TIMESTAMP extends BaseType {
     static toString() {
         return 'TIMESTAMP';
     }
+}
+
+export interface TimestampConstructor {
+    new(accuracy: number): TIMESTAMP;
+    (accuracy: number): TIMESTAMP;
+}
+
+/**
+ *
+ *
+ * @export
+ * @class DATETIME
+ * @extends {BaseType}
+ */
+export class DATETIME extends BaseType {
+    constructor(accuracy: number) {
+        super('DATETIME', { acc: accuracy });
+    }
+
+    static toString() {
+        return 'DATETIME';
+    }
+}
+
+export interface DatetimeConstructor {
+    new(accuracy: number): DATETIME;
+    (accuracy: number): DATETIME;
 }

@@ -23,7 +23,7 @@ const testModel = new Model<testTableModel>('test', {
         autoIncrement: true
     },
     f1: {
-        type: DmType.VARCHAR,
+        type: DmType.STRING(132),
         allowNull: false,
         comment: 'f1comment'
     },
@@ -45,14 +45,12 @@ server.connect().then(async () => {
     //     f3: new Date()
     // });
     // await testModel.saveMany([{
-    //     id: 4,
     //     f1: 'test',
     //     f2: false,
     //     f3: new Date()
     // }, {
-    //     id: 4,
-    //     f1: 'test',
-    //     f2: false,
+    //     f1: 'tesat1,tesat2,tesat3,test',
+    //     f2: true,
     //     f3: new Date()
     // }]);
     // await testModel.upsert({ where: { id: 3 } }, { f2: false }, {
@@ -63,7 +61,13 @@ server.connect().then(async () => {
     // });
     // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
-    // console.log(await testModel.find());
+    // console.log(await testModel.update({
+    //     where: {
+    //         f1: {
+    //             $regexp: new RegExp('t1')
+    //         }
+    //     }
+    // }, { f1: { $pull: ['tesat2', 'test'], $split: ',' } }));
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

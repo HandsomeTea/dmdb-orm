@@ -121,18 +121,7 @@ export default new class UtilFactory {
         const arr: Array<string> = [];
 
         for (const key in update) {
-            const updateOpt = update[key];
-
-            if (updateOpt.$pull && updateOpt.$split) {
-                const { $pull, $split } = updateOpt as { $pull: string | Array<string>, $split: ',' };
-                const reg = (typeof $pull === 'string' ? [$pull] : $pull).map(a => `(${a}${$split})|(${$split}${a})`).join('|');
-                let regStr = new RegExp(reg, '').toString();
-
-                regStr = regStr.substring(1, regStr.length - 1);
-                arr.push(`${tableAlias}."${key}" = REGEXP_REPLACE(${tableAlias}."${key}", '${regStr}', '')`);
-            } else {
-                arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
-            }
+            arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
         }
         return arr.join(', ');
     }

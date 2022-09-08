@@ -1,6 +1,6 @@
 import dmdb from 'dmdb';
 
-import { typeIs, logSql } from './utils';
+import { logSql } from './utils';
 import SQL from './factory/sql';
 import { DmModel, QueryOption, UpdateOption, OBJECT, DmModelOption } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
@@ -272,25 +272,11 @@ export class Model<TB extends OBJECT> {
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
-            const { set, allowNull } = struct[key];
+            const { set } = struct[key];
             const type = struct[key].type.toString();
 
-            if (allowNull === false && new Set(['null', 'undefined']).has(typeof update[key])) {
-                throw Error(`[${this.table}.${key}]不允许为null`);
-            }
-
             if (set) {
-                if (!typeIs(update[key], 'object')) {
-                    _update[key] = set(update[key]);
-
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                } else if (update[key].$pull) { // 提示：$pull一定是对字符串的操作
-
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    _update[key] = { ...update[key], $pull: set(update[key].$pull) };
-                }
+                _update[key] = set(update[key]);
             } else if (type === DmType.BOOLEAN.toString()) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore

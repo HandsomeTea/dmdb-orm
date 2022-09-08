@@ -61,13 +61,6 @@ server.connect().then(async () => {
     // });
     // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
-    // console.log(await testModel.update({
-    //     where: {
-    //         f1: {
-    //             $regexp: new RegExp('t1')
-    //         }
-    //     }
-    // }, { f1: { $pull: ['tesat2', 'test'], $split: ',' } }));
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

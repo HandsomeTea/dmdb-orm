@@ -296,6 +296,11 @@ export class Model<TB extends OBJECT> {
 
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
+                } else if (update[key].$pull) { // 提示：$pull一定是对字符串的操作
+
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    _update[key] = { ...update[key], $pull: set(update[key].$pull) };
                 }
             } else if (type === DmType.BOOLEAN.toString()) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

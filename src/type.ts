@@ -31,13 +31,13 @@ export interface QueryOption<M> {
 }
 
 export type UpdateOption<M> = {
-    [P in keyof M]?: M[P]
+    [P in keyof M]?: M[P] extends string ? (string | { $pull: string, $split: ',' }) : M[P]
 }
 
 export interface DmModelOption {
     /** 在dmdb属于哪个模式，覆盖全局modelName的设置 */
     modelName?: string
-    tenantId?: string | (() => string),
+    tenantId?: string | (() => string)
     createdAt?: string | boolean
     updatedAt?: string | boolean
 }
@@ -54,5 +54,5 @@ export interface DmModelAttributes<M extends OBJECT, K extends keyof M = keyof M
 }
 
 export type DmModel<M extends OBJECT> = {
-    [K in keyof M]: DmModelAttributes<M, K>
+    [K in keyof M]: DmModelAttributes<M>
 }

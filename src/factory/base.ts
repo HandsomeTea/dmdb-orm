@@ -95,7 +95,7 @@ export default new class UtilFactory {
                     let regStr = new RegExp($regexp as string | RegExp, '').toString();
 
                     regStr = regStr.substring(1, regStr.length - 1);
-                    arr.push(`${sqlKey} regexp ${regStr}`);
+                    arr.push(`REGEXP_LIKE(${sqlKey}, '${regStr}', 'i')`);
                 }
                 if (useFn) {
                     const { useForCol, fn, value } = useFn;
@@ -121,7 +121,14 @@ export default new class UtilFactory {
         const arr: Array<string> = [];
 
         for (const key in update) {
-            arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
+            const aa = update[key];
+
+            if (aa.$pull && aa.$split) {
+                // arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}${aa.$split}', '')`);
+                arr.push(`${tableAlias}."${key}" = replace(${tableAlias}."${key}", '${aa.$pull}', '')`);
+            } else {
+                arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
+            }
         }
         return arr.join(', ');
     }

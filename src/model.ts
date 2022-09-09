@@ -1,8 +1,8 @@
 import dmdb from 'dmdb';
 
-import { logSql } from './utils';
+import { logSql, typeIs } from './utils';
 import SQL from './factory/sql';
-import { DmModel, QueryOption, UpdateOption, OBJECT, DmModelOption } from './type';
+import { DmModel, QueryOption, UpdateOption, OBJECT, DmModelOption, ProjectionType, ComputeOption, ComputeFn } from './type';
 import { ORM_DMDB_SERVER, ORM_DMDB_SETTING } from './dmdb';
 import { DmType } from './data-type';
 
@@ -163,11 +163,46 @@ export class Model<TB extends OBJECT> {
         return await ORM_DMDB_SERVER.executeMany(_sql, 1);
     }
 
-    private dataFormat(dbData: Record<string, unknown>, projection: Array<keyof TB>): TB {
+    private getProjection(projection?: ProjectionType<TB>): Array<string> {
+        if (projection) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            if (typeIs(projection) === 'array' && projection.length > 0) {
+                return projection as Array<string>;
+            } else {
+                let arr = Object.keys(this.tableModel);
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                if (projection.include && projection.include.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    arr = arr.filter(a => projection.include.includes(a));
+                }
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                if (projection.exclude && projection.exclude.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    arr = arr.filter(a => !projection.exclude.includes(a));
+                }
+
+                if (arr.length > 0) {
+                    return arr;
+                }
+            }
+        }
+
+        return Object.keys(this.tableModel);
+    }
+
+    private dataFormat(dbData: Record<string, unknown>, projection: ProjectionType<TB>): TB {
         const struct = { ...this.tableModel };
         const data: { [P in keyof TB]?: TB[P] } = {};
+        const _projection = this.getProjection(projection);
 
-        for (const key of projection) {
+        for (const key of _projection) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             if (typeof dbData[key] === 'undefined') {
@@ -307,29 +342,47 @@ export class Model<TB extends OBJECT> {
 
     public async find(): Promise<Array<TB>>
     public async find(query: QueryOption<TB>): Promise<Array<TB>>
-    public async find<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<Array<{ [F in K]: TB[F] }>>
+    public async find<K extends keyof TB>(query: QueryOption<TB>, projection: ProjectionType<TB>): Promise<Array<{ [F in K]: TB[F] }>>
 
-    public async find(query?: QueryOption<TB>, projection?: Array<keyof TB>): Promise<Array<TB>> {
-        const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
+    public async find(query?: QueryOption<TB>, projection?: ProjectionType<TB>): Promise<Array<TB>> {
+        const fields = this.getProjection(projection);
         const sql = SQL.getSelectSql(query || {}, this.tableName, fields);
 
         return (await this.execute(sql)).map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) || [];
     }
 
     public async findOne(query: QueryOption<TB>): Promise<TB | null>
-    public async findOne<K extends keyof TB>(query: QueryOption<TB>, projection: Array<K>): Promise<{ [F in K]: TB[F] } | null>
+    public async findOne<K extends keyof TB>(query: QueryOption<TB>, projection: ProjectionType<TB>): Promise<{ [F in K]: TB[F] } | null>
 
-    public async findOne(query: QueryOption<TB>, projection?: Array<keyof TB>): Promise<TB | null> {
-        const fields = (projection || Object.keys(this.tableModel)) as Array<keyof TB>;
+    public async findOne(query: QueryOption<TB>, projection?: ProjectionType<TB>): Promise<TB | null> {
+        const fields = this.getProjection(projection) as Array<keyof TB>;
 
         return (await this.find({ ...query, offset: 0, limit: 1 }, fields))[0] || null;
     }
 
-    public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }): Promise<{ list: Array<TB>, total: number }>
-    public async paging<K extends keyof TB>(query: QueryOption<TB>, option: { skip: number, limit: number }, projection: Array<K>): Promise<{ list: Array<{ [F in K]: TB[F] }>, total: number }>
+    public async findById(id: any, projection?: ProjectionType<TB>): Promise<TB | null> {// eslint-disable-line @typescript-eslint/no-explicit-any
+        const fields = this.getProjection(projection) as Array<keyof TB>;
+        let idField: string | null = null;
 
-    public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }, projection?: Array<keyof TB>): Promise<{ list: Array<TB>, total: number }> {
-        const fields = (projection || Object.keys(this.tableModel)) as Array<string>;
+        for (const key in this.tableModel) {
+            if (this.tableModel[key].primaryKey === true) {
+                idField = key;
+            }
+        }
+
+        if (idField) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            return await this.findOne({ where: { [idField]: id } }, fields);
+        }
+        return null;
+    }
+
+    public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }): Promise<{ list: Array<TB>, total: number }>
+    public async paging<K extends keyof TB>(query: QueryOption<TB>, option: { skip: number, limit: number }, projection: ProjectionType<TB>): Promise<{ list: Array<{ [F in K]: TB[F] }>, total: number }>
+
+    public async paging(query: QueryOption<TB>, option: { skip: number, limit: number }, projection?: ProjectionType<TB>): Promise<{ list: Array<TB>, total: number }> {
+        const fields = this.getProjection(projection);
         const sql = SQL.getPageSql(query, { ...option, tableName: this.tableName }, fields);
 
         return {
@@ -342,5 +395,17 @@ export class Model<TB extends OBJECT> {
         const data = await this.execute(SQL.getCountSql(query || {}, this.tableName)) as Array<Record<string, number>>;
 
         return Number(Object.values(data[0])[0]);
+    }
+
+    public async compute<K extends keyof TB>(rule: ComputeOption<TB>, query?: QueryOption<TB>) {
+        const data = await this.execute(SQL.getComputeSql(rule, query || {}, this.tableName)) as Array<Record<string, unknown>>;
+        const obj: { [F in K]?: Record<ComputeFn, TB[F]> } = {};
+
+        Object.keys(data[0]).map(a => {
+            const [field, fn] = a.split('_');
+
+            obj[field] = { [fn]: data[0][a] };
+        });
+        return obj;
     }
 }

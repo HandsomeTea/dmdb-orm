@@ -1,5 +1,5 @@
 import { ORM_DMDB_SETTING } from '../dmdb';
-import { OBJECT, SQLOption, UpdateOption, WhereOption } from '../type';
+import { OBJECT, WhereAttributes, UpdateOption, WhereOption } from '../type';
 import { typeIs } from '../utils';
 
 
@@ -43,71 +43,71 @@ export default new class UtilFactory {
             const option = where[key];
             const sqlKey = `${tableAlias}."${key}"`;
 
-            if (typeIs(option) === 'object'
-                && (typeof option.$between !== 'undefined' ||
-                    typeof option.$gt !== 'undefined' ||
-                    typeof option.$gte !== 'undefined' ||
-                    typeof option.$in !== 'undefined' ||
-                    typeof option.$like !== 'undefined' ||
-                    typeof option.$lt !== 'undefined' ||
-                    typeof option.$lte !== 'undefined' ||
-                    typeof option.$ne !== 'undefined' ||
-                    typeof option.$notIn !== 'undefined' ||
-                    typeof option.$regexp !== 'undefined' ||
-                    typeof option.useFn !== 'undefined'
-                )) {
-                const { $between, $notBetween, $gt, $gte, $in, $like, $notLike, $likeAny, $startsWith, $endsWith,
-                    $lt, $lte, $ne, $notIn, $regexp, $notRegexp, useFn } = option as SQLOption<OBJECT>;
+            if (typeIs(option) === 'object') {
+                const { $ne, $in, $notIn, $like, $notLike, $regexp,
+                    $between, $notBetween, $gt, $gte, $lt, $lte } = option as WhereAttributes<OBJECT>;
 
-                if ($between) {
-                    arr.push(`${sqlKey} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);
-                }
-                if (typeof $gt !== 'undefined') {
-                    arr.push(`${sqlKey} > ${this.getSqlValue($gt)}`);
-                }
-                if (typeof $gte !== 'undefined') {
-                    arr.push(`${sqlKey} >= ${this.getSqlValue($gte)}`);
-                }
-                if ($in) {
-                    const _in = $in.map(a => this.getSqlValue(a));
-
-                    arr.push(`${sqlKey} in (${_in.join(', ')})`);
-                }
-                if ($like) {
-                    arr.push(`${sqlKey} like '%${$like}%'`);
-                }
-                if (typeof $lt !== 'undefined') {
-                    arr.push(`${sqlKey} > ${this.getSqlValue($lt)}`);
-                }
-                if (typeof $lte !== 'undefined') {
-                    arr.push(`${sqlKey} >= ${this.getSqlValue($lte)}`);
-                }
                 if (typeof $ne !== 'undefined') {
                     const value = this.getSqlValue($ne);
 
                     arr.push(isVal.has(value) ? `${sqlKey} is not ${value}` : `${sqlKey} != ${value}`);
                 }
+
+                if ($in) {
+                    const _in = $in.map(a => this.getSqlValue(a));
+
+                    arr.push(`${sqlKey} in (${_in.join(', ')})`);
+                }
+
                 if ($notIn) {
                     const _notIn = $notIn.map(a => this.getSqlValue(a));
 
                     arr.push(`${sqlKey} not in (${_notIn.join(', ')})`);
                 }
+
+                if (typeof $like !== 'undefined') {
+                    arr.push(`${sqlKey} like '%${$like}%'`);
+                }
+
+                if (typeof $notLike !== 'undefined') {
+                    arr.push(`${sqlKey} not like '%${$notLike}%'`);
+                }
+
                 if ($regexp) {
-                    let regStr = new RegExp($regexp as string | RegExp, '').toString();
+                    let regStr = new RegExp($regexp, '').toString();
 
                     regStr = regStr.substring(1, regStr.length - 1);
                     arr.push(`REGEXP_LIKE(${sqlKey}, '${regStr}', 'i')`);
                 }
-                if (useFn) {
-                    const { useForCol, fn, value } = useFn;
 
-                    if (typeof useForCol === 'string') {
-                        arr.push(`${useForCol}(${key}) = ${fn}(${this.getSqlValue(value)})`);
-                    } else if (Boolean(useForCol) === true) {
-                        arr.push(`${fn}(${key}) = ${fn}(${this.getSqlValue(value)})`);
-                    } else {
-                        arr.push(`${key} = ${fn}(${this.getSqlValue(value)})`);
-                    }
+                if ($between) {
+                    arr.push(`${sqlKey} between ${this.getSqlValue($between[0])} and ${this.getSqlValue($between[1])}`);
+                }
+
+                if ($notBetween) {
+                    arr.push(`${sqlKey} not between ${this.getSqlValue($notBetween[0])} and ${this.getSqlValue($notBetween[1])}`);
+                }
+
+                if (typeof $gt !== 'undefined') {
+                    arr.push(`${sqlKey} > ${this.getSqlValue($gt)}`);
+                }
+
+                if (typeof $gte !== 'undefined') {
+                    arr.push(`${sqlKey} >= ${this.getSqlValue($gte)}`);
+                }
+
+                if (typeof $lt !== 'undefined') {
+                    arr.push(`${sqlKey} > ${this.getSqlValue($lt)}`);
+                }
+
+                if (typeof $lte !== 'undefined') {
+                    arr.push(`${sqlKey} >= ${this.getSqlValue($lte)}`);
+                }
+            } else if (typeIs(option) === 'function') {
+                const funRes = option(sqlKey) as string;
+
+                if (funRes) {
+                    arr.push(funRes);
                 }
             } else {
                 const value = this.getSqlValue(option);

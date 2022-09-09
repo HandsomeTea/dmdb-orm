@@ -2,31 +2,41 @@ import { DmdbDataType } from './data-type';
 
 export type OBJECT = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export interface SQLOption<M, P extends keyof M = keyof M> {
+export interface WhereAttributes<M, P extends keyof M = keyof M> {
     $ne?: M[P]
     $in?: Array<M[P]>
     $notIn?: Array<M[P]>
+    $exists?: boolean
     $like?: string
-    $likeAny?: Array<string>
     $notLike?: string
+    // $likeAny?: Array<string>
+    // $notLikeAny?: Array<string>
+    // $startWith?: string
+    // $endWith?: string
     $regexp?: string | RegExp
-    $notRegexp?: string | RegExp
-    $between?: [M[P], M[P]]
-    $notBetween?: [M[P], M[P]]
-    $gt?: M[P]
-    $lt?: M[P]
-    $gte?: M[P]
-    $lte?: M[P]
-    $startsWith?: string
-    $endsWith?: string
-    useFn?: { value: M[P], fn: string, useForCol?: boolean | string }
+    // $notRegexp?: string | RegExp
+    $between?: [number, number] | [Date, Date]
+    $notBetween?: [number, number] | [Date, Date]
+    $gt?: number | Date
+    $gte?: number | Date
+    $lt?: number | Date
+    $lte?: number | Date
 }
 
+type FunctionWhere = (fieldName: string) => string
+
 export type WhereOption<M> = {
-    [P in keyof M]?: M[P] | SQLOption<M>
+    [P in keyof M]?: M[P] | WhereAttributes<M> | FunctionWhere
 }
 
 type OneOf<T, P extends keyof T = keyof T> = { [K in P]-?: Required<Pick<T, K>> & Partial<Record<Exclude<P, K>, never>>; }[P];
+
+export type ProjectionType<M> =
+    Array<keyof M> |
+    {
+        exclude?: Array<keyof M>
+        include?: Array<keyof M>
+    }
 
 export interface QueryOption<M> {
     where?: WhereOption<M> & { $or?: Array<WhereOption<M>> }
@@ -34,6 +44,12 @@ export interface QueryOption<M> {
     order?: Array<OneOf<Record<keyof M, 'asc' | 'desc'>>>
     limit?: number
     offset?: number
+}
+
+export type ComputeFn = 'min' | 'max' | 'avg' | 'median' | 'sum' | 'count'
+
+export type ComputeOption<M> = {
+    [P in keyof M]?: { fn: ComputeFn, distinct?: boolean }
 }
 
 export type UpdateOption<M> = {

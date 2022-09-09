@@ -1,4 +1,4 @@
-import { QueryOption, UpdateOption } from '../type';
+import { ComputeOption, QueryOption, UpdateOption } from '../type';
 import util from './base';
 
 type Model = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -130,6 +130,25 @@ class SQL {
         const _tableName = this.getAliasTableName(tableName);
 
         return `select count(*) as count from ${tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)};`;
+    }
+
+    public getComputeSql(rule: ComputeOption<Model>, query: QueryOption<Model>, tableName: string): string {
+        // SELECT MIN(NOWPRICE) FROM PRODUCTION.PRODUCT WHERE DISCOUNT < 7;
+        // SELECT COUNT(DISTINCT PUBLISHER) FROM PRODUCTION.PRODUCT;
+        const _tableName = this.getAliasTableName(tableName);
+        const arr: Array<string> = [];
+
+        for (const key in rule) {
+            const option = rule[key];
+
+            if (option) {
+                const { fn, distinct } = option;
+
+                arr.push(!distinct || fn === 'median' ? `${fn}("${key}") as "${key}_${fn}"` : `${fn}(distinct "${key}") as "${key}_${fn}"`);
+            }
+        }
+
+        return `select ${arr.join(', ')} from ${tableName} as ${_tableName} ${this.getQueryOption(query, _tableName)};`;
     }
 }
 

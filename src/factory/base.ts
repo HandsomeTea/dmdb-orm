@@ -1,4 +1,3 @@
-import { ORM_DMDB_SETTING } from '../dmdb';
 import { OBJECT, WhereAttributes, UpdateOption, WhereOption } from '../type';
 import { typeIs } from '../utils';
 
@@ -20,16 +19,9 @@ export default new class UtilFactory {
         } else if (type === 'undefined' || type === 'null') {
             return 'null';
         } else if (type === 'date') {
-            let date = '';
+            const date = `${(value as Date).toLocaleString(undefined, { hour12: false })}.${(value as Date).getMilliseconds()}`;
 
-            if (ORM_DMDB_SETTING.timezone === 'local') {
-                date = (value as Date).toLocaleString(undefined, { hour12: false }).replace(/\//g, '-');
-            } else {
-                const str = (value as Date).toISOString();
-
-                date = `${str.substring(0, 10)} ${str.substring(11, 19)}`;
-            }
-            return `to_timestamp('${date}','yyyy-mm-dd hh24:mi:ss')`;
+            return `to_timestamp('${date}','yyyy/mm/dd hh24:mi:ss.ff6')`;
         } else {
             return '';
         }

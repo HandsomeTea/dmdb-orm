@@ -18,7 +18,7 @@ export class NUMERIC extends BaseType {
 }
 
 export interface NumericConstructor {
-    new(accuracy: number, scale?: number): NUMERIC;
+    new(): NUMERIC;
     (accuracy: number, scale?: number): NUMERIC;
 }
 
@@ -40,7 +40,7 @@ export class DECIMAL extends BaseType {
 }
 
 export interface DecimalConstructor {
-    new(accuracy: number, scale?: number): DECIMAL;
+    new(): DECIMAL;
     (accuracy: number, scale?: number): DECIMAL;
 }
 
@@ -62,7 +62,7 @@ export class DEC extends BaseType {
 }
 
 export interface DecConstructor {
-    new(accuracy: number, scale?: number): DEC;
+    new(): DEC;
     (accuracy: number, scale?: number): DEC;
 }
 
@@ -84,7 +84,7 @@ export class NUMBER extends BaseType {
 }
 
 export interface NumberTypeConstructor {
-    new(accuracy: number, scale?: number): NUMBER;
+    new(): NUMBER;
     (accuracy: number, scale?: number): NUMBER;
 }
 

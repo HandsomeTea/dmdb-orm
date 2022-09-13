@@ -18,7 +18,7 @@ export class CHAR extends BaseType {
 }
 
 export interface CharConstructor {
-    new(length: number): CHAR;
+    new(): CHAR;
     (length: number): CHAR;
 }
 
@@ -40,7 +40,7 @@ export class CHARACTER extends BaseType {
 }
 
 export interface CharacterConstructor {
-    new(length: number): CHARACTER;
+    new(): CHARACTER;
     (length: number): CHARACTER;
 }
 
@@ -62,7 +62,7 @@ export class VARCHAR extends BaseType {
 }
 
 export interface VarcharConstructor {
-    new(length: number): VARCHAR;
+    new(): VARCHAR;
     (length: number): VARCHAR;
 }
 
@@ -84,7 +84,7 @@ export class VARCHAR2 extends BaseType {
 }
 
 export interface Varchar2Constructor {
-    new(length: number): VARCHAR2;
+    new(): VARCHAR2;
     (length: number): VARCHAR2;
 }
 
@@ -104,7 +104,7 @@ export class STRING extends VARCHAR {
 }
 
 export interface StringTypeConstructor {
-    new(length: number): STRING;
+    new(): STRING;
     (length: number): STRING;
 }
 

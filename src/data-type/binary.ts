@@ -18,7 +18,7 @@ export class BINARY extends BaseType {
 }
 
 export interface BinaryTypeConstructor {
-    new(length: number): BINARY;
+    new(): BINARY;
     (length: number): BINARY;
 }
 
@@ -40,7 +40,7 @@ export class VARBINARY extends BaseType {
 }
 
 export interface VarbinaryTypeConstructor {
-    new(length: number): VARBINARY;
+    new(): VARBINARY;
     (length: number): VARBINARY;
 }
 

@@ -34,20 +34,20 @@ export class TIME extends BaseType {
 }
 
 export interface TimeConstructor {
-    new(accuracy: number): TIME;
+    new(): TIME;
     (accuracy: number): TIME;
 }
 
 /**
- *
+ * default: TIMESTAMP(6)
  *
  * @export
  * @class TIMESTAMP
  * @extends {BaseType}
  */
 export class TIMESTAMP extends BaseType {
-    constructor(accuracy?: number) {
-        super('TIMESTAMP', { acc: accuracy || 6 });
+    constructor(accuracy: number) {
+        super('TIMESTAMP', { acc: accuracy });
     }
 
     static toString() {
@@ -56,20 +56,20 @@ export class TIMESTAMP extends BaseType {
 }
 
 export interface TimestampConstructor {
-    new(accuracy?: number): TIMESTAMP;
-    (accuracy?: number): TIMESTAMP;
+    new(): TIMESTAMP;
+    (accuracy: number): TIMESTAMP;
 }
 
 /**
- *
+ * default: DATETIME(6)
  *
  * @export
  * @class DATETIME
  * @extends {BaseType}
  */
 export class DATETIME extends BaseType {
-    constructor(accuracy?: number) {
-        super('DATETIME', { acc: accuracy || 6 });
+    constructor(accuracy: number) {
+        super('DATETIME', { acc: accuracy });
     }
 
     static toString() {
@@ -78,6 +78,6 @@ export class DATETIME extends BaseType {
 }
 
 export interface DatetimeConstructor {
-    new(accuracy?: number): DATETIME;
-    (accuracy?: number): DATETIME;
+    new(): DATETIME;
+    (accuracy: number): DATETIME;
 }

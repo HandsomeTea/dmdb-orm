@@ -11,11 +11,6 @@ interface DmdbSetting {
     modelName: string
     createdAt?: string
     updatedAt?: string
-    /** 时区取值，default: iso。
-     * iso: 将使用new Date().toISOString()取值并使用sql函数to_date存库
-     * local: 将使用new Date().toLocaleString()取值并使用sql函数to_date存库
-     */
-    timezone?: 'iso' | 'local',
     logger?: boolean | ((sql: string) => void)
 }
 
@@ -24,7 +19,7 @@ export type DmServerOption = Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
     updatedAt?: string | boolean,
 }
 
-export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'local', modelName: '' };
+export var ORM_DMDB_SETTING: DmdbSetting = { modelName: '' };
 
 export class DMServer {
     private dmdbConnectionParams: dmdb.PoolAttributes;
@@ -33,7 +28,7 @@ export class DMServer {
     constructor(connect: dmdb.PoolAttributes, option: DmServerOption) {
         this.isReady = false;
 
-        const { modelName, createdAt, updatedAt, timezone, logger } = option;
+        const { modelName, createdAt, updatedAt, logger } = option;
 
         ORM_DMDB_SETTING.modelName = modelName;
         if (createdAt) {
@@ -41,9 +36,6 @@ export class DMServer {
         }
         if (updatedAt) {
             ORM_DMDB_SETTING.updatedAt = typeof updatedAt === 'string' ? updatedAt : 'updatedAt';
-        }
-        if (timezone) {
-            ORM_DMDB_SETTING.timezone = timezone;
         }
         if (typeof logger !== 'undefined') {
             ORM_DMDB_SETTING.logger = logger;

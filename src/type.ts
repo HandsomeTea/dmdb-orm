@@ -6,15 +6,9 @@ export interface WhereAttributes<M, P extends keyof M = keyof M> {
     $ne?: M[P]
     $in?: Array<M[P]>
     $notIn?: Array<M[P]>
-    $exists?: boolean
     $like?: string
     $notLike?: string
-    // $likeAny?: Array<string>
-    // $notLikeAny?: Array<string>
-    // $startWith?: string
-    // $endWith?: string
     $regexp?: string | RegExp
-    // $notRegexp?: string | RegExp
     $between?: [number, number] | [Date, Date]
     $notBetween?: [number, number] | [Date, Date]
     $gt?: number | Date
@@ -72,6 +66,7 @@ export interface DmModelAttributes<M extends OBJECT, K extends keyof M = keyof M
     unique?: boolean
     autoIncrement?: boolean
     set?: (a: unknown) => M[K]
+    /**  */
     defaultValue?: M[K] | (() => M[K])
 }
 

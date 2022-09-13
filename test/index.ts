@@ -6,6 +6,7 @@ const server = new DMServer({
 }, {
     modelName: 'testDB',
     createdAt: true,
+    updatedAt: 'update_at',
     logger: true
 });
 
@@ -23,26 +24,27 @@ const testModel = new Model<testTableModel>('test', {
         autoIncrement: true
     },
     f1: {
-        type: DmType.STRING(132),
+        type: DmType.STRING,
         allowNull: false,
-        comment: 'f1comment'
+        comment: 'f1comment',
+        defaultValue: 'ss'
     },
     f2: {
         type: DmType.BOOLEAN,
         comment: 'boolean test'
     },
     f3: {
-        type: DmType.DATETIME
+        type: DmType.TIME
     }
 }, {});
 
 server.connect().then(async () => {
     await testModel.sync();
-    await testModel.save({
-        f1: 'null',
-        f2: true,
-        f3: new Date()
-    });
+    // await testModel.save({
+    //     f1: 'null',
+    //     f2: true,
+    //     f3: new Date()
+    // });
     // await testModel.saveMany([{
     //     f1: 'test',
     //     f2: false,
@@ -60,7 +62,13 @@ server.connect().then(async () => {
     // });
     // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
-    // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
+    // console.log(await testModel.paging({
+    //     where: {
+    //         f1: (colName: string) => {
+    //             return `${colName} = 'null'`;
+    //         }
+    //     }
+    // }, { skip: 0, limit: 2 }));
     // console.log(await testModel.compute({ id: { fn: 'max', distinct: true }, f1: { fn: 'min' } }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

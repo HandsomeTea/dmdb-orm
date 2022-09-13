@@ -276,7 +276,7 @@ export class Model<TB extends OBJECT> {
 
     /** delete table */
     public async drop(): Promise<void> {
-        await this.execute(`drop table ${this.tableName};`);
+        await this.execute(`drop table if exists ${this.tableName};`);
     }
 
     public async save(data: TB): Promise<void> {

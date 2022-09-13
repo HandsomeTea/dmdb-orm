@@ -24,7 +24,7 @@ export type DmServerOption = Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
     updatedAt?: string | boolean,
 }
 
-export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'iso', modelName: '' };
+export var ORM_DMDB_SETTING: DmdbSetting = { timezone: 'local', modelName: '' };
 
 export class DMServer {
     private dmdbConnectionParams: dmdb.PoolAttributes;

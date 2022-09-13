@@ -29,21 +29,20 @@ const testModel = new Model<testTableModel>('test', {
     },
     f2: {
         type: DmType.BOOLEAN,
-        unique: true,
         comment: 'boolean test'
     },
     f3: {
-        type: DmType.DATE
+        type: DmType.DATETIME
     }
 }, {});
 
 server.connect().then(async () => {
     await testModel.sync();
-    // await testModel.save({
-    //     f1: 'null',
-    //     f2: true,
-    //     f3: new Date()
-    // });
+    await testModel.save({
+        f1: 'null',
+        f2: true,
+        f3: new Date()
+    });
     // await testModel.saveMany([{
     //     f1: 'test',
     //     f2: false,
@@ -62,5 +61,6 @@ server.connect().then(async () => {
     // await testModel.update({ where: { f1: 'null' } }, { f1: 'new string' });
     // await testModel.delete({ where: { id: 4 } });
     // console.log(await testModel.paging({}, { skip: 0, limit: 2 }));
+    // console.log(await testModel.compute({ id: { fn: 'max', distinct: true }, f1: { fn: 'min' } }));
     // eslint-disable-next-line no-console
 }).catch((e: DBError) => console.log(e.message));

@@ -51,8 +51,8 @@ export class Model<TB extends OBJECT> {
 
         this.tableModel = {
             ...struct,
-            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.DATE } } : {},
-            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.DATE } } : {}
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: { type: DmType.TIMESTAMP } } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: { type: DmType.TIMESTAMP } } : {}
         };
     }
 
@@ -265,14 +265,12 @@ export class Model<TB extends OBJECT> {
                 }
             }
         }
-        const time = new Date();
-
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return {
             ..._data,
-            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: time } : {},
-            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: time } : {}
+            ...this.timestamp.createdAt ? { [this.timestamp.createdAt]: 'current_timestamp()' } : {},
+            ...this.timestamp.updatedAt ? { [this.timestamp.updatedAt]: 'current_timestamp()' } : {}
         };
     }
 
@@ -324,6 +322,11 @@ export class Model<TB extends OBJECT> {
         }
         if (Object.keys(_update).length === 0) {
             return;
+        }
+        if (this.timestamp.updatedAt) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            _update[this.timestamp.updatedAt] = 'current_timestamp()';
         }
         const sql = SQL.getUpdateSql(query, _update, { tableName: this.tableName, ...this.timestamp });
 

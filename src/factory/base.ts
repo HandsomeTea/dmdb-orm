@@ -29,7 +29,7 @@ export default new class UtilFactory {
 
                 date = `${str.substring(0, 10)} ${str.substring(11, 19)}`;
             }
-            return `to_date('${date}','yyyy-mm-dd hh24:mi:ss')`;
+            return `to_timestamp('${date}','yyyy-mm-dd hh24:mi:ss')`;
         } else {
             return '';
         }
@@ -118,12 +118,17 @@ export default new class UtilFactory {
         return arr;
     }
 
-    public update(update: UpdateOption<OBJECT>, tableAlias: string): string {
+    public update(update: UpdateOption<OBJECT>, option: { tableAlias: string, updatedAt?: string }): string {
         const arr: Array<string> = [];
 
         for (const key in update) {
-            arr.push(`${tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
+            if (key === option.updatedAt) {
+                arr.push(`${option.tableAlias}."${key}" = ${update[key]}`);
+            } else {
+                arr.push(`${option.tableAlias}."${key}" = ${this.getSqlValue(update[key])}`);
+            }
         }
+
         return arr.join(', ');
     }
 };

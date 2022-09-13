@@ -74,18 +74,19 @@ class SQL {
     }
 
     public getInsertSql(data: Model, option: { tableName: string, createdAt?: string, updatedAt?: string }): string {
-        if (option.createdAt) {
-            data[option.createdAt] = new Date();
-        }
-        if (option.updatedAt) {
-            data[option.updatedAt] = new Date();
-        }
-        const keyStr = Object.keys(data).map(a => `"${a}"`).join(', ');
-        const valueStr = Object.values(data).map(a => {
-            return util.getSqlValue(a);
-        }).join(', ');
+        const keyArr: Array<string> = [];
+        const valueArr: Array<string> = [];
 
-        return `insert into ${option.tableName} (${keyStr}) values (${valueStr});`;
+        for (const key in data) {
+            keyArr.push(`"${key}"`);
+            if (key === option.createdAt || key === option.updatedAt) {
+                valueArr.push(data[key]);
+            } else {
+                valueArr.push(util.getSqlValue(data[key]));
+            }
+        }
+
+        return `insert into ${option.tableName} (${keyArr.join(', ')}) values (${valueArr.join(', ')});`;
     }
 
     public getDeleteSql(query: Pick<QueryOption<Model>, 'where'>, tableName: string): string {
@@ -95,12 +96,9 @@ class SQL {
     }
 
     public getUpdateSql(query: Pick<QueryOption<Model>, 'where'>, update: UpdateOption<Model>, option: { tableName: string, updatedAt?: string }): string {
-        if (option.updatedAt) {
-            update[option.updatedAt] = new Date();
-        }
         const _tableName = this.getAliasTableName(option.tableName);
 
-        return `update ${option.tableName} as ${_tableName} set ${util.update(update, _tableName)} ${this.getQueryOption(query, _tableName)};`;
+        return `update ${option.tableName} as ${_tableName} set ${util.update(update, { tableAlias: _tableName, updatedAt: option.updatedAt })} ${this.getQueryOption(query, _tableName)};`;
     }
 
     // public getUpsertSql(insert: Model, update: UpsertOption<Model>, tableName: string): string {

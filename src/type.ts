@@ -51,7 +51,7 @@ export type UpdateOption<M> = {
 }
 
 export interface DmModelOption {
-    /** 在dmdb属于哪个模式，覆盖全局modelName的设置 */
+    /** table所在的模式，会覆盖全局modelName的设置 */
     modelName?: string
     tenantId?: string | (() => string)
     createdAt?: string | boolean
@@ -66,7 +66,7 @@ export interface DmModelAttributes<M extends OBJECT, K extends keyof M = keyof M
     unique?: boolean
     autoIncrement?: boolean
     set?: (a: unknown) => M[K]
-    /**  */
+    /** 默认值并不会放在创建表的时候定义字段的sql语句中，而是在存数据或者更新数据的时候，如果数据为空值，则取defaultValue给定的值 */
     defaultValue?: M[K] | (() => M[K])
 }
 

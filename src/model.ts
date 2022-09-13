@@ -305,11 +305,19 @@ export class Model<TB extends OBJECT> {
         const _update: { [P in keyof TB]?: TB[P] } = {};
 
         for (const key in update) {
-            const { set } = struct[key];
+            const { set, defaultValue } = struct[key];
             const type = struct[key].type.toString();
 
             if (set) {
                 _update[key] = set(update[key]);
+            } else if (!update[key] && defaultValue) {
+                if (typeof defaultValue !== 'function') {
+                    _update[key] = defaultValue;
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    _update[key] = defaultValue();
+                }
             } else if (type === DmType.BOOLEAN.toString()) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore

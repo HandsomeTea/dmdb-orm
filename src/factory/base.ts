@@ -69,7 +69,7 @@ export default new class UtilFactory {
                     let regStr = new RegExp($regexp, '').toString();
 
                     regStr = regStr.substring(1, regStr.length - 1);
-                    arr.push(`REGEXP_LIKE(${sqlKey}, '${regStr}', 'i')`);
+                    arr.push(`regexp_like(${sqlKey}, '${regStr}', 'i')`);
                 }
 
                 if ($between) {

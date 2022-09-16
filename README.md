@@ -1,6 +1,5 @@
 
 ### 连接数据库
-`startup.ts`
 ```typescript
 import { DMServer } from 'dmdb-orm';
 
@@ -9,8 +8,6 @@ const service = new DMServer({
 });
 
 service.connect();
-
-export default service;
 ```
 - `DMServer constructor(dmdb.PoolAttributes[, DmServerOption])`
   - `dmdb.PoolAttributes`，达梦官方nodejs驱动包连接数据库的参数，详见[达梦官方文档](https://eco.dameng.com/document/dm/zh-cn/pm/nodejs-rogramming-guide.html#10.3.1.3%E5%87%BD%E6%95%B0%E5%8E%9F%E5%9E%8B)
@@ -104,8 +101,8 @@ testModel.find();
 - `Model.update(query， update)`
   - 更新数据，返回`Promise<void>`
 
-- `Model.upsert()`
-  - 
+<!-- - `Model.upsert()`
+  -  -->
 
 - `Model.find([query, projection])`
   - 查询数据，返回`Promise<Array<obj>>`

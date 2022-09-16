@@ -8,7 +8,7 @@ import { logSql } from './utils';
 export var ORM_DMDB_SERVER: dmdb.Connection | null = null;
 
 interface DmdbSetting {
-    modelName: string
+    modelName?: string
     createdAt?: string
     updatedAt?: string
     logger?: boolean | ((sql: string) => void)
@@ -19,26 +19,28 @@ export type DmServerOption = Omit<DmdbSetting, 'createdAt' | 'updatedAt'> & {
     updatedAt?: string | boolean,
 }
 
-export var ORM_DMDB_SETTING: DmdbSetting = { modelName: '' };
+export var ORM_DMDB_SETTING: DmdbSetting = {};
 
 export class DMServer {
     private dmdbConnectionParams: dmdb.PoolAttributes;
     private service!: dmdb.Connection;
     private isReady = false;
-    constructor(connect: dmdb.PoolAttributes, option: DmServerOption) {
+    constructor(connect: dmdb.PoolAttributes, option?: DmServerOption) {
         this.isReady = false;
 
-        const { modelName, createdAt, updatedAt, logger } = option;
+        if (option) {
+            const { modelName, createdAt, updatedAt, logger } = option;
 
-        ORM_DMDB_SETTING.modelName = modelName;
-        if (createdAt) {
-            ORM_DMDB_SETTING.createdAt = typeof createdAt === 'string' ? createdAt : 'createdAt';
-        }
-        if (updatedAt) {
-            ORM_DMDB_SETTING.updatedAt = typeof updatedAt === 'string' ? updatedAt : 'updatedAt';
-        }
-        if (typeof logger !== 'undefined') {
-            ORM_DMDB_SETTING.logger = logger;
+            ORM_DMDB_SETTING.modelName = modelName;
+            if (createdAt) {
+                ORM_DMDB_SETTING.createdAt = typeof createdAt === 'string' ? createdAt : 'createdAt';
+            }
+            if (updatedAt) {
+                ORM_DMDB_SETTING.updatedAt = typeof updatedAt === 'string' ? updatedAt : 'updatedAt';
+            }
+            if (typeof logger !== 'undefined') {
+                ORM_DMDB_SETTING.logger = logger;
+            }
         }
 
         this.dmdbConnectionParams = connect;

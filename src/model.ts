@@ -9,7 +9,7 @@ import { DmType } from './data-type';
 export class Model<TB extends OBJECT> {
     /** 初始化传入的表名 */
     private tName: string;
-    private modelName: string;
+    private modelName?: string;
     private tenantId: string | (() => string) | undefined;
     private timestamp: {
         createdAt?: string
@@ -113,7 +113,7 @@ export class Model<TB extends OBJECT> {
     }
 
     /** 最终所得的表名 */
-    private get tableName(): `"${string}"."${string}"` {
+    private get tableName(): `"${string}"."${string}"` | `"${string}"` {
         let tId: string | null = null;
 
         if (this.tenantId) {
@@ -129,7 +129,7 @@ export class Model<TB extends OBJECT> {
             name = `${tId}_${name}`;
         }
 
-        return `"${this.modelName}"."${name}"`;
+        return this.modelName ? `"${this.modelName}"."${name}"` : `"${name}"`;
     }
 
     /** table名称 */
@@ -362,10 +362,11 @@ export class Model<TB extends OBJECT> {
         return (await this.execute(sql)).map((a: unknown) => this.dataFormat(a as Record<string, unknown>, fields as Array<keyof TB>)) || [];
     }
 
+    public async findOne(): Promise<TB | null>
     public async findOne(query: QueryOption<TB>): Promise<TB | null>
     public async findOne<K extends keyof TB>(query: QueryOption<TB>, projection: ProjectionType<TB>): Promise<{ [F in K]: TB[F] } | null>
 
-    public async findOne(query: QueryOption<TB>, projection?: ProjectionType<TB>): Promise<TB | null> {
+    public async findOne(query?: QueryOption<TB>, projection?: ProjectionType<TB>): Promise<TB | null> {
         const fields = this.getProjection(projection) as Array<keyof TB>;
 
         return (await this.find({ ...query, offset: 0, limit: 1 }, fields))[0] || null;

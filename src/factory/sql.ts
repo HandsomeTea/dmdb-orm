@@ -70,7 +70,7 @@ class SQL {
     }
 
     private getAliasTableName(tableName: string) {
-        return `"${tableName.replace(/"/g, '').replace('.', '_')}"`;
+        return `"_${tableName.replace(/"/g, '').replace('.', '_')}"`;
     }
 
     public getInsertSql(data: Model, option: { tableName: string, createdAt?: string, updatedAt?: string }): string {

@@ -1,3 +1,5 @@
+## dmdb-orm
+  封装nodejs操作达梦数据库的快捷操作
 
 ### 连接数据库
 ```typescript

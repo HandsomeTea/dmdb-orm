@@ -20,6 +20,18 @@ export default service;
     - [createdAt]：：boolean/string，默认false，是否为表添加数据insert的时间字段，也可以传入一个字符串作为改字段名
     - [updatedAt]：boolean/string，默认false，是否为表添加数据update的时间字段，也可以传入一个字符串作为改字段名
 
+- `DMServer.connect()`
+  - 链接数据库，返回一个Promise
+
+- `DMServer.server`
+  - 使用达梦数据库官方驱动包建立的原始链接
+
+- `DMServer.isOK`
+  - 连接状态，可作为健康检查的判断依据
+
+-  `DMServer.close()`
+  - 关闭数据库连接
+
 ### 数据操作
 ```typescript
 import { DmType, Model } from 'dmdb-orm';
@@ -62,3 +74,51 @@ testModel.find();
     - [tenantId]，多租户分表选项
     - [createdAt]，同连接数据库时设置的createdAt，如果设置，则覆盖之前连接数据库时的设置
     - [updatedAt]，同连接数据库时设置的updatedAt，如果设置，则覆盖之前连接数据库时的设置
+
+- `Model.sync()`
+  - 当表不存在时，创建表，返回一个Promise
+
+- `Model.model`
+  - 获取当前表的model
+
+- `Model.table`
+  - 获取当前表的名称
+
+- `Model.db`
+  - 使用达梦数据库官方驱动包建立的原始链接
+
+- `Model.drop()`
+  - 删除当前表，返回一个Promise<void>
+
+- `Model.save(obj)`
+  - 插入一条数据，返回Promise<void>
+
+- `Model.saveMany(Array<obj>)`
+  - 插入多条数据，返回Promise<void>
+
+- `Model.delete(query)`
+  - 删除数据，返回Promise<void>
+
+- `Model.update(query， update)`
+  - 更新数据，返回Promise<void>
+
+- `Model.upsert()`
+  -
+
+- `Model.find([query, projection])`
+  - 查询数据，返回Promise<Array<obj>>
+
+- `Model.findOne([query, projection])`
+  - 查询一条数据，返回Promise<obj | null>
+
+- `Model.findById(id[, projection])`
+  - 查询一条数据，返回Promise<obj | null>
+
+- `Model.paging(query, option:{skip, limit}[, projection])`
+  - 分页查询，返回Promise<{ list: Array<obj>, total: number }>
+
+- `Model.count([query])`
+  - 查询数据量，返回Promise<number>
+
+- `Model.compute(rule[, query])`
+ - 简单的计算查询，支持'min' | 'max' | 'avg' | 'median' | 'sum' | 'count'

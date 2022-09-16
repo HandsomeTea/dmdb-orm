@@ -1,5 +1,5 @@
 
-### 快速使用
+### 连接数据库
 `startup.ts`
 ```typescript
 import { DMServer } from 'dmdb-orm';
@@ -32,7 +32,7 @@ export default service;
 -  `DMServer.close()`
   - 关闭数据库连接
 
-### 数据操作
+### 快速使用
 ```typescript
 import { DmType, Model } from 'dmdb-orm';
 
@@ -66,6 +66,8 @@ const testModel = new Model<TableModel>('test', {
 
 testModel.find();
 ```
+
+### 数据操作
 - Model，constructor(tableName, struct[, option])
   - tableName，表名称
   - struct，表结构定义

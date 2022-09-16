@@ -120,4 +120,4 @@ testModel.find();
   - 查询数据量，返回`Promise<number>`
 
 - `Model.compute(rule[, query])`
- - 简单的计算查询，支持`'min' | 'max' | 'avg' | 'median' | 'sum' | 'count'`
+  - 简单的计算查询，支持`'min' | 'max' | 'avg' | 'median' | 'sum' | 'count'`
